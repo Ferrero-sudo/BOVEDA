@@ -411,6 +411,7 @@ const todayISO = () => { const d = new Date(); return `${d.getFullYear()}-${pad2
 const isoToDate = iso => { const [y, m, d] = iso.split('-').map(Number); return new Date(y, m - 1, d); };
 const addDaysISO = (n) => { const d = new Date(); d.setDate(d.getDate() + n); return `${d.getFullYear()}-${pad2(d.getMonth() + 1)}-${pad2(d.getDate())}`; };
 const inFrame = (() => { try { return window.self !== window.top; } catch { return true; } })();
+const APP_VERSION = '1.1.0';
 const ITER = 600000;
 const COLORS = ['none', 'rojo', 'naranja', 'amarillo', 'verde', 'azul', 'lila', 'gris'];
 const COLOR_NAMES = { none: 'Sin color', rojo: 'Rojo', naranja: 'Naranja', amarillo: 'Amarillo', verde: 'Verde', azul: 'Azul', lila: 'Lila', gris: 'Gris' };
@@ -1017,6 +1018,9 @@ async function openSettings() {
     <div class="set-group"><h3>Aspecto</h3>
       <div class="set-row"><div><label for="sTheme"><b>Tema</b></label></div><select id="sTheme"><option value="system">Como el sistema</option><option value="light">Claro</option><option value="dark">Oscuro</option></select></div>
     </div>
+    <div class="set-group"><h3>Aplicación</h3>
+      <div class="set-row"><div><b>Versión ${APP_VERSION}</b><small id="sVerInfo">Se actualiza sola al abrirla con internet</small></div><button class="btn" id="sUpdate">Buscar actualización</button></div>
+    </div>
     <div class="set-group"><h3>Copias de seguridad</h3>
       <p style="font-size:.9rem">Las notas solo existen en este dispositivo. Guarda una copia cifrada para no perderlas o para pasarlas al ordenador. Se abre con el PIN que tenías al crearla.</p>
       <div class="set-row" style="flex-wrap:wrap;justify-content:flex-start"><button class="btn" id="sExport">Exportar copia</button><button class="btn" id="sImport">Importar copia</button>
@@ -1039,6 +1043,7 @@ async function openSettings() {
     sh.querySelector('#sImport').onclick = () => sh.querySelector('#sFile').click();
     sh.querySelector('#sFile').onchange = e => { const f = e.target.files[0]; if (f) importBackup(f); };
     sh.querySelector('#sWipe').onclick = wipeVault;
+    sh.querySelector('#sUpdate').onclick = e => checkUpdate(e.target, sh.querySelector('#sVerInfo'));
   });
 }
 async function changePin() {
@@ -1090,6 +1095,34 @@ function wipeVault() {
   });
 }
 
+/* ================= Actualizaciones ================= */
+let swReg = null;
+async function checkUpdate(btn, info) {
+  if (inFrame || !('serviceWorker' in navigator) || location.protocol !== 'https:') { info.textContent = 'Solo disponible en la app instalada.'; return; }
+  btn.disabled = true; const label = btn.textContent; btn.textContent = 'Buscando…';
+  try {
+    const r = await fetch('version.json?t=' + Date.now(), { cache: 'no-store' });
+    if (!r.ok) throw new Error('http');
+    const { version } = await r.json();
+    if (version && version !== APP_VERSION) {
+      info.textContent = `Hay una versión nueva (${version}). Instalando…`;
+      try { await swReg?.update(); } catch {}
+      await flushSave();
+      setTimeout(() => location.reload(), 600);
+      return;
+    }
+    info.textContent = 'Ya tienes la última versión.';
+  } catch { info.textContent = 'Sin conexión. Inténtalo cuando tengas internet.'; }
+  btn.disabled = false; btn.textContent = label;
+}
+if ('serviceWorker' in navigator && !inFrame) {
+  let hadController = !!navigator.serviceWorker.controller;
+  navigator.serviceWorker.addEventListener('controllerchange', () => {
+    if (!hadController) { hadController = true; return; }
+    toast('Hay una versión nueva de la app', 'Actualizar', async () => { await flushSave(); location.reload(); });
+  });
+}
+
 /* ================= Arranque ================= */
 (async function boot() {
   if (!window.crypto?.subtle) { $('#lockSub').textContent = 'Este navegador no permite cifrar. Abre la app desde una dirección https.'; return; }
@@ -1099,7 +1132,7 @@ function wipeVault() {
   if (!S.meta || !S.meta.pinWrap) { S.meta = S.meta || null; showLock('setup1'); }
   else showLock('unlock', true);
   if (Store.mem) $('#lockFoot').textContent = 'Este navegador no deja guardar datos aquí: las notas se perderán al cerrar.';
-  if ('serviceWorker' in navigator && !inFrame && location.protocol === 'https:') navigator.serviceWorker.register('sw.js').catch(() => {});
+  if ('serviceWorker' in navigator && !inFrame && location.protocol === 'https:') navigator.serviceWorker.register('sw.js').then(r => { swReg = r; r.update().catch(() => {}); }).catch(() => {});
 })();
 })();
 </script>
