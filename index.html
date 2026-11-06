@@ -1,0 +1,1108 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#ECF0EE" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#0D1412" media="(prefers-color-scheme: dark)">
+<meta name="description" content="Notas privadas cifradas en tu dispositivo, con huella o PIN.">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Bóveda">
+<meta name="referrer" content="no-referrer">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self' data: blob:; connect-src 'self' https://fonts.googleapis.com https://fonts.gstatic.com; object-src 'none'; base-uri 'none'; form-action 'none'">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="icon-192.png">
+<style>:root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}[hidden]{display:none!important}html,body{height:100%}</style>
+<title>Bóveda de Notas</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:ital,wght@0,400;0,700;1,400&family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700&family=IBM+Plex+Mono:wght@500&display=swap">
+<style>
+/* Layout: a private notebook vault. Lock screen with keypad; then a masonry wall of tinted note cards
+   with a search bar on top and a strip of upcoming dates (the bridge to the future calendar).
+   On wide screens the editor opens as a right-hand pane; on phones it slides up full screen. */
+:root{
+  --bg:#ECF0EE; --surface:#FBFCFB; --surface-2:#E2E8E5; --line:#CFD8D4;
+  --ink:#12201C; --ink-2:#465752; --ink-3:#6F7F7A;
+  --accent:#0D6B5B; --accent-ink:#FFFFFF; --accent-soft:#D2E9E2;
+  --date:#8F530A; --date-soft:#F5E5CB;
+  --danger:#B3261E; --danger-soft:#F8DDDA;
+  --mark:#FFE58A; --mark-ink:#2A2100;
+  --shadow:0 1px 2px rgba(18,32,28,.06),0 6px 18px rgba(18,32,28,.07);
+  --n-none:var(--surface); --n-rojo:#F7DBD6; --n-naranja:#FADFC2; --n-amarillo:#F4EAB3; --n-verde:#D3EBD6;
+  --n-azul:#D4E4F5; --n-lila:#E4DBF3; --n-gris:#DEE3E1;
+  --d-none:#9AA7A3; --d-rojo:#C4473B; --d-naranja:#D07A1E; --d-amarillo:#B59410; --d-verde:#3E8E4F;
+  --d-azul:#3470B5; --d-lila:#7558B8; --d-gris:#6F7F7A;
+  --f-display:"Bricolage Grotesque", "Segoe UI", system-ui, sans-serif;
+  --f-body:"Atkinson Hyperlegible", "Segoe UI", system-ui, -apple-system, sans-serif;
+  --f-mono:"IBM Plex Mono", ui-monospace, "SFMono-Regular", Consolas, monospace;
+  --r-sm:8px; --r-md:14px; --r-lg:22px;
+  --ease:cubic-bezier(.2,.8,.2,1);
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#0D1412; --surface:#151F1C; --surface-2:#1D2926; --line:#2A3834;
+    --ink:#E4EDEA; --ink-2:#A8B7B2; --ink-3:#7E8E89;
+    --accent:#52C4AA; --accent-ink:#04201A; --accent-soft:#17382F;
+    --date:#EBA95E; --date-soft:#382813;
+    --danger:#F2B8B5; --danger-soft:#45201C;
+    --mark:#7A6312; --mark-ink:#FFF6D6;
+    --shadow:0 1px 2px rgba(0,0,0,.3),0 8px 22px rgba(0,0,0,.28);
+    --n-rojo:#3A211E; --n-naranja:#3A2A17; --n-amarillo:#353119; --n-verde:#1B3123;
+    --n-azul:#1A2A3C; --n-lila:#2A233D; --n-gris:#242C2A;
+    --d-none:#6F7F7A; --d-rojo:#E57A6E; --d-naranja:#EBA05A; --d-amarillo:#D8BE4A; --d-verde:#6CC27F;
+    --d-azul:#6FA6E6; --d-lila:#A98DE8; --d-gris:#98A6A1;
+    color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#0D1412; --surface:#151F1C; --surface-2:#1D2926; --line:#2A3834;
+  --ink:#E4EDEA; --ink-2:#A8B7B2; --ink-3:#7E8E89;
+  --accent:#52C4AA; --accent-ink:#04201A; --accent-soft:#17382F;
+  --date:#EBA95E; --date-soft:#382813;
+  --danger:#F2B8B5; --danger-soft:#45201C;
+  --mark:#7A6312; --mark-ink:#FFF6D6;
+  --shadow:0 1px 2px rgba(0,0,0,.3),0 8px 22px rgba(0,0,0,.28);
+  --n-rojo:#3A211E; --n-naranja:#3A2A17; --n-amarillo:#353119; --n-verde:#1B3123;
+  --n-azul:#1A2A3C; --n-lila:#2A233D; --n-gris:#242C2A;
+  --d-none:#6F7F7A; --d-rojo:#E57A6E; --d-naranja:#EBA05A; --d-amarillo:#D8BE4A; --d-verde:#6CC27F;
+  --d-azul:#6FA6E6; --d-lila:#A98DE8; --d-gris:#98A6A1;
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+html,body{height:100%}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--f-body);font-size:16px;line-height:1.5;
+  -webkit-font-smoothing:antialiased;-webkit-tap-highlight-color:transparent;overflow:hidden}
+button,input,textarea,select{font:inherit;color:inherit}
+button{cursor:pointer}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+svg{display:block}
+.ico{width:20px;height:20px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;flex:none}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+
+/* ---------- Lock screen ---------- */
+#lock{height:100%;overflow:auto;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:22px;
+  padding-block:32px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));text-align:center}
+.mark{width:64px;height:64px;border-radius:20px;background:var(--accent);color:var(--accent-ink);display:grid;place-items:center}
+.mark svg{width:34px;height:34px}
+#lock h1{font-family:var(--f-display);font-weight:700;font-size:1.75rem;line-height:1.15;margin:0;text-wrap:balance;letter-spacing:-.01em}
+#lockSub{margin:6px 0 0;color:var(--ink-2);max-width:30ch;text-wrap:balance}
+.dots{display:flex;gap:18px;height:20px;align-items:center}
+.dots span{width:16px;height:16px;border-radius:50%;border:2px solid var(--ink-3);transition:background .15s,border-color .15s,transform .15s var(--ease)}
+.dots span.on{background:var(--accent);border-color:var(--accent);transform:scale(1.08)}
+.dots.busy span{animation:pulse 1s infinite ease-in-out}
+.dots.busy span:nth-child(2){animation-delay:.12s}.dots.busy span:nth-child(3){animation-delay:.24s}.dots.busy span:nth-child(4){animation-delay:.36s}
+@keyframes pulse{50%{background:var(--accent-soft);border-color:var(--accent)}}
+.shake{animation:shake .4s}
+@keyframes shake{20%,60%{transform:translateX(-9px)}40%,80%{transform:translateX(9px)}}
+#lockMsg{min-height:1.5em;margin:0;color:var(--ink-2);font-size:.95rem;max-width:34ch}
+#lockMsg.err{color:var(--danger)}
+.pad{display:grid;grid-template-columns:repeat(3,76px);gap:14px 22px;justify-content:center}
+.key{width:76px;height:76px;border-radius:50%;border:0;background:var(--surface);box-shadow:var(--shadow);
+  font-family:var(--f-mono);font-size:1.6rem;font-weight:500;display:grid;place-items:center;transition:transform .08s,background .15s}
+.key:active{transform:scale(.94);background:var(--accent-soft)}
+.key.ghost{background:transparent;box-shadow:none;color:var(--ink-2)}
+.key.ghost svg{width:28px;height:28px}
+.key:disabled{opacity:.35;cursor:default}
+.key.bio{color:var(--accent)}
+.lock-actions{display:flex;flex-wrap:wrap;gap:10px;justify-content:center}
+.lock-foot{margin:0;color:var(--ink-3);font-size:.82rem;max-width:36ch}
+
+/* ---------- Buttons ---------- */
+.btn{white-space:nowrap;display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:44px;padding:0 18px;border-radius:999px;border:1px solid var(--line);
+  background:var(--surface);font-weight:700;font-size:.95rem;transition:background .15s,border-color .15s}
+.btn:hover{border-color:var(--ink-3)}
+.btn.primary{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
+.btn.danger{background:var(--danger-soft);border-color:transparent;color:var(--danger)}
+.btn.quiet{background:transparent;border-color:transparent;color:var(--ink-2)}
+.icon-btn{width:44px;height:44px;border-radius:12px;border:0;background:transparent;display:grid;place-items:center;color:var(--ink-2);flex:none}
+.icon-btn:hover{background:var(--surface-2);color:var(--ink)}
+.icon-btn[aria-pressed="true"]{color:var(--accent);background:var(--accent-soft)}
+
+/* ---------- App shell ---------- */
+#app{height:100%;display:grid;grid-template-columns:1fr;grid-template-rows:100%}
+#listPane{min-width:0;height:100%;overflow-y:auto;overscroll-behavior:contain;scroll-padding-top:90px}
+.topbar{position:sticky;top:0;z-index:5;background:var(--bg);
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:12px 10px}
+.topbar-row{display:flex;align-items:center;gap:8px;max-width:1180px;margin:0 auto}
+.brand{display:flex;align-items:center;gap:10px;font-family:var(--f-display);font-weight:700;font-size:1.2rem;letter-spacing:-.01em;margin-right:6px;white-space:nowrap}
+.brand .mark{width:34px;height:34px;border-radius:11px}
+.brand .mark svg{width:19px;height:19px}
+@media (max-width:560px){.brand-name{display:none}.brand{margin-right:2px}.topbar-row{gap:4px}}
+.search{flex:1;min-width:0;position:relative}
+.search .ico{position:absolute;left:14px;top:50%;transform:translateY(-50%);color:var(--ink-3);pointer-events:none}
+#q{width:100%;height:46px;border-radius:999px;border:1px solid var(--line);background:var(--surface);padding:0 70px 0 44px;font-size:1rem;outline:none;transition:border-color .15s,box-shadow .15s}
+#q:focus{border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-soft)}
+#q::-webkit-search-cancel-button{display:none}
+.kbd{position:absolute;right:12px;top:50%;transform:translateY(-50%);font-family:var(--f-mono);font-size:.72rem;color:var(--ink-3);border:1px solid var(--line);border-radius:6px;padding:1px 6px}
+#qClear{position:absolute;right:6px;top:50%;transform:translateY(-50%);width:36px;height:36px}
+.chips{display:flex;gap:8px;overflow-x:auto;scrollbar-width:none;max-width:1180px;margin:10px auto 0;padding-bottom:2px}
+.chips::-webkit-scrollbar{display:none}
+.chip{flex:none;display:inline-flex;align-items:center;gap:6px;height:34px;padding:0 14px;border-radius:999px;border:1px solid var(--line);background:transparent;
+  font-size:.9rem;color:var(--ink-2);white-space:nowrap}
+.chip[aria-pressed="true"]{background:var(--ink);border-color:var(--ink);color:var(--bg)}
+.chip .n{font-family:var(--f-mono);font-size:.75rem;opacity:.75}
+main{max-width:1180px;margin:0 auto;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:6px 120px}
+.sec-title{display:flex;align-items:baseline;justify-content:space-between;gap:12px;margin:18px 2px 10px;font-size:.78rem;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-3);font-weight:700}
+.sec-title .count{font-family:var(--f-mono);letter-spacing:0;text-transform:none}
+
+/* Upcoming dates strip */
+.upcoming{display:flex;gap:10px;overflow-x:auto;padding:2px 2px 8px;scrollbar-width:thin}
+.up{flex:none;display:flex;align-items:stretch;gap:0;border:0;border-radius:var(--r-md);background:var(--date-soft);color:var(--ink);text-align:left;padding:0;overflow:hidden;max-width:260px}
+.up .day{display:flex;flex-direction:column;align-items:center;justify-content:center;padding:8px 12px;background:var(--date);color:var(--surface);min-width:58px}
+.up .day b{font-family:var(--f-display);font-size:1.4rem;line-height:1}
+.up .day small{font-size:.7rem;text-transform:uppercase;letter-spacing:.06em;font-weight:700}
+.up .txt{padding:8px 14px;min-width:0;display:flex;flex-direction:column;justify-content:center}
+.up .txt span{font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.up .txt small{color:var(--date);font-weight:700;font-size:.78rem}
+
+/* Notes wall */
+.wall{columns:15.5rem;column-gap:12px}
+.card{break-inside:avoid;margin:0 0 12px;display:block;width:100%;text-align:left;border:1px solid transparent;border-radius:var(--r-md);
+  background:var(--n-none);padding:14px 16px 12px;box-shadow:var(--shadow);cursor:pointer;position:relative;
+  transition:transform .18s var(--ease),box-shadow .18s}
+.fresh .card{animation:rise .3s var(--ease) both}
+.card[data-c="none"]{border-color:var(--line);box-shadow:none}
+.card:hover{transform:translateY(-2px)}
+.card.active{outline:2px solid var(--accent);outline-offset:1px}
+@keyframes rise{from{transform:translateY(6px)}to{transform:none}}
+.card h3{font-family:var(--f-display);font-weight:600;font-size:1.08rem;line-height:1.25;margin:0 26px 6px 0;text-wrap:balance;overflow-wrap:anywhere}
+.card .pin{position:absolute;right:12px;top:13px;color:var(--ink-2)}
+.card .pin .ico{width:17px;height:17px}
+.md{font-size:.94rem;color:var(--ink-2);overflow-wrap:anywhere}
+.card .md{max-height:15.5em;overflow:hidden;-webkit-mask-image:linear-gradient(#000 78%,transparent);mask-image:linear-gradient(#000 78%,transparent)}
+.card .md.short{-webkit-mask-image:none;mask-image:none}
+.md p{margin:0 0 .35em}
+.md h4{font-family:var(--f-display);font-weight:600;color:var(--ink);font-size:1rem;margin:.5em 0 .2em}
+.md ul{margin:0 0 .35em;padding-left:1.15em}
+.md li{margin:0 0 .15em}
+.md .todo{display:flex;gap:8px;align-items:flex-start;margin:0 0 .25em;list-style:none}
+.md .todo input{appearance:none;-webkit-appearance:none;width:18px;height:18px;flex:none;margin:2px 0 0;border:2px solid var(--ink-3);border-radius:5px;display:grid;place-items:center;cursor:pointer;background:transparent}
+.md .todo input:checked{background:var(--accent);border-color:var(--accent)}
+.md .todo input:checked::after{content:"";width:5px;height:9px;border:solid var(--accent-ink);border-width:0 2px 2px 0;transform:translateY(-1px) rotate(45deg)}
+.md .todo.done span{text-decoration:line-through;color:var(--ink-3)}
+.md code{font-family:var(--f-mono);font-size:.85em;background:var(--surface-2);padding:1px 5px;border-radius:5px}
+.md .gap{height:.5em}
+mark{background:var(--mark);color:var(--mark-ink);border-radius:3px;padding:0 1px}
+.meta{display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin-top:10px;font-size:.78rem;color:var(--ink-3)}
+.tag{display:inline-flex;align-items:center;height:24px;padding:0 9px;border-radius:999px;background:var(--surface-2);color:var(--ink-2);font-size:.78rem;font-weight:700;border:0}
+.card .tag{background:color-mix(in srgb,var(--ink) 8%,transparent)}
+.datechip{display:inline-flex;align-items:center;gap:5px;height:24px;padding:0 9px;border-radius:999px;background:var(--date-soft);color:var(--date);font-weight:700;font-size:.78rem}
+.datechip .ico{width:14px;height:14px}
+.datechip.past{background:var(--surface-2);color:var(--ink-3)}
+.when{margin-left:auto;font-family:var(--f-mono);font-size:.72rem}
+
+.empty{text-align:center;padding:56px 16px;color:var(--ink-2);max-width:34rem;margin:0 auto}
+.empty h2{font-family:var(--f-display);font-weight:700;color:var(--ink);font-size:1.4rem;margin:12px 0 6px;text-wrap:balance}
+.empty .ill{width:86px;height:86px;margin:0 auto;border-radius:28px;background:var(--accent-soft);color:var(--accent);display:grid;place-items:center}
+.empty .ill svg{width:42px;height:42px}
+
+#fab{position:fixed;z-index:6;right:calc(20px + env(safe-area-inset-right,0px));bottom:calc(22px + env(safe-area-inset-bottom,0px));height:58px;padding:0 22px 0 18px;border-radius:999px;border:0;
+  background:var(--accent);color:var(--accent-ink);font-weight:700;font-size:1rem;display:flex;align-items:center;gap:8px;box-shadow:0 8px 24px color-mix(in srgb,var(--accent) 40%,transparent);transition:transform .15s var(--ease)}
+#fab:active{transform:scale(.96)}
+#fab .ico{width:22px;height:22px;stroke-width:2.2}
+
+/* ---------- Editor ---------- */
+#editor{position:fixed;inset:0;z-index:20;background:var(--ed-bg,var(--surface));display:flex;flex-direction:column;
+  transform:translateY(102%);transition:transform .32s var(--ease),background .2s;visibility:hidden}
+body.editing #editor{transform:none;visibility:visible}
+.ed-head{display:flex;align-items:center;gap:2px;padding-block:calc(8px + env(safe-area-inset-top,0px)) 4px;
+  padding-left:max(8px,env(safe-area-inset-left,0px));padding-right:max(8px,env(safe-area-inset-right,0px))}
+.ed-head .spacer{flex:1}
+#saveState{font-size:.78rem;color:var(--ink-3);font-family:var(--f-mono);margin-right:6px;white-space:nowrap}
+.ed-body{flex:1;overflow-y:auto;overscroll-behavior:contain;padding-left:max(20px,env(safe-area-inset-left,0px));padding-right:max(20px,env(safe-area-inset-right,0px));padding-block:4px 24px}
+.ed-inner{max-width:720px;margin:0 auto;display:flex;flex-direction:column;gap:10px}
+#edTitle{border:0;background:transparent;outline:none;font-family:var(--f-display);font-weight:700;font-size:1.65rem;line-height:1.2;padding:4px 0;width:100%;letter-spacing:-.01em}
+#edTitle::placeholder,#edBody::placeholder{color:var(--ink-3)}
+.ed-row{display:flex;flex-wrap:wrap;align-items:center;gap:8px}
+.swatches{display:flex;gap:6px}
+.sw{width:26px;height:26px;border-radius:50%;border:2px solid transparent;padding:0;background:var(--sw);box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--ink) 18%,transparent)}
+.sw[aria-checked="true"]{border-color:var(--ink);box-shadow:inset 0 0 0 2px var(--surface)}
+.datefield{display:inline-flex;align-items:center;gap:6px;height:36px;padding:0 6px 0 10px;border-radius:999px;background:color-mix(in srgb,var(--ink) 7%,transparent);color:var(--ink-2)}
+.datefield.set{background:var(--date-soft);color:var(--date)}
+.datefield input{border:0;background:transparent;outline:none;font-size:.9rem;font-weight:700;color:inherit;min-width:0;max-width:150px}
+.datefield input[type="time"]{max-width:96px}
+.datefield input::-webkit-calendar-picker-indicator{opacity:.55;cursor:pointer}
+.datefield .icon-btn{width:28px;height:28px;border-radius:50%}
+.tags-in{display:flex;flex-wrap:wrap;gap:6px;align-items:center;min-height:36px}
+.tags-in .tag{gap:4px;padding-right:4px;background:color-mix(in srgb,var(--ink) 9%,transparent)}
+.tags-in .tag button{border:0;background:transparent;width:18px;height:18px;display:grid;place-items:center;border-radius:50%;color:inherit;padding:0}
+.tags-in .tag button .ico{width:12px;height:12px}
+#tagInput{border:0;background:transparent;outline:none;font-size:.9rem;min-width:9rem;flex:1;height:30px}
+#edBody{border:0;background:transparent;outline:none;resize:none;width:100%;min-height:45vh;font-size:1.06rem;line-height:1.65;padding:6px 0;overflow:hidden}
+#edView{min-height:45vh;font-size:1.06rem;line-height:1.65;color:var(--ink);padding:6px 0;cursor:text}
+#edView .md{font-size:inherit;color:inherit}
+.ed-tools{display:flex;gap:2px;align-items:center;border-top:1px solid color-mix(in srgb,var(--ink) 10%,transparent);
+  padding-block:6px calc(6px + env(safe-area-inset-bottom,0px));padding-left:max(8px,env(safe-area-inset-left,0px));padding-right:max(8px,env(safe-area-inset-right,0px));overflow-x:auto}
+.ed-tools .tb{height:40px;min-width:40px;padding:0 10px;border:0;border-radius:10px;background:transparent;color:var(--ink-2);display:inline-flex;align-items:center;gap:6px;font-weight:700;font-size:.9rem;flex:none}
+.ed-tools .tb:hover{background:color-mix(in srgb,var(--ink) 8%,transparent);color:var(--ink)}
+.ed-tools .sep{width:1px;height:22px;background:color-mix(in srgb,var(--ink) 14%,transparent);margin:0 4px;flex:none}
+.seg{display:inline-flex;border-radius:10px;background:color-mix(in srgb,var(--ink) 8%,transparent);padding:3px;margin-left:auto;flex:none}
+.seg button{border:0;background:transparent;height:34px;padding:0 12px;border-radius:8px;font-weight:700;font-size:.85rem;color:var(--ink-2)}
+.seg button[aria-pressed="true"]{background:var(--surface);color:var(--ink);box-shadow:var(--shadow)}
+
+@media (min-width:960px){
+  body.editing #app{grid-template-columns:minmax(0,1fr) minmax(440px,46%)}
+  #editor{position:relative;inset:auto;grid-column:2;grid-row:1;transform:none;visibility:visible;display:none;border-left:1px solid var(--line);z-index:1}
+  body.editing #editor{display:flex;animation:slideIn .28s var(--ease)}
+  @keyframes slideIn{from{transform:translateX(24px)}to{transform:none}}
+  #edTitle{font-size:1.9rem}
+  .ed-head{padding-top:12px}
+  body.editing #fab{right:calc(max(440px,46%) + 24px)}
+}
+
+/* ---------- Modal + toast ---------- */
+.scrim{position:fixed;inset:0;z-index:40;background:color-mix(in srgb,#000 45%,transparent);display:flex;align-items:flex-end;justify-content:center;animation:fade .2s}
+@keyframes fade{from{background:transparent}}
+.sheet{background:var(--surface);width:100%;max-width:560px;max-height:92%;overflow-y:auto;border-radius:var(--r-lg) var(--r-lg) 0 0;
+  padding-block:22px calc(22px + env(safe-area-inset-bottom,0px));padding-left:max(22px,env(safe-area-inset-left,0px));padding-right:max(22px,env(safe-area-inset-right,0px));animation:up .28s var(--ease)}
+@keyframes up{from{transform:translateY(40px)}}
+@media (min-width:640px){.scrim{align-items:center}.sheet{border-radius:var(--r-lg);padding-bottom:22px}}
+.sheet h2{font-family:var(--f-display);font-weight:700;font-size:1.35rem;margin:0 0 6px}
+.sheet p{color:var(--ink-2);margin:0 0 12px}
+.sheet .actions{display:flex;flex-wrap:wrap;gap:10px;justify-content:flex-end;margin-top:18px}
+.field{display:flex;flex-direction:column;gap:6px;margin:12px 0}
+.field label{font-weight:700;font-size:.9rem}
+.field input,.field select{height:46px;border-radius:12px;border:1px solid var(--line);background:var(--bg);padding:0 14px;font-size:1rem}
+.field input:focus,.field select:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-soft)}
+.pin-in{font-family:var(--f-mono);letter-spacing:.5em;font-size:1.3rem!important;text-align:center}
+.set-group{border-top:1px solid var(--line);padding:16px 0 4px}
+.set-group:first-of-type{border-top:0;padding-top:4px}
+.set-group h3{font-size:.78rem;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-3);margin:0 0 10px}
+.set-row{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:8px 0}
+.set-row div{min-width:0}
+.set-row b{display:block}
+.set-row small{color:var(--ink-3);display:block}
+.set-row select{height:40px;border-radius:10px;border:1px solid var(--line);background:var(--bg);padding:0 10px;max-width:46%}
+.note-box{background:var(--surface-2);border-radius:12px;padding:12px 14px;font-size:.88rem;color:var(--ink-2);margin:8px 0}
+#toasts{position:fixed;z-index:50;left:50%;transform:translateX(-50%);bottom:calc(92px + env(safe-area-inset-bottom,0px));display:flex;flex-direction:column;gap:8px;align-items:center;width:max-content;max-width:calc(100% - 32px)}
+.toast{background:var(--ink);color:var(--bg);border-radius:14px;padding:10px 10px 10px 16px;display:flex;align-items:center;gap:12px;box-shadow:var(--shadow);animation:up .25s var(--ease);font-size:.95rem}
+.toast button{border:0;background:transparent;color:var(--accent-soft);font-weight:700;padding:6px 8px;border-radius:8px}
+
+@media (prefers-reduced-motion:reduce){*,*::before,*::after{animation-duration:.01ms!important;transition-duration:.01ms!important}}
+</style>
+</head>
+<body>
+
+
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <defs>
+    <symbol id="i-vault" viewBox="0 0 24 24"><path d="M6 3h11a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6z"/><path d="M6 3v18M4 7h2M4 12h2M4 17h2"/><circle cx="12.5" cy="10.5" r="2.2"/><path d="M12.5 12.7V16"/></symbol>
+    <symbol id="i-search" viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></symbol>
+    <symbol id="i-lock" viewBox="0 0 24 24"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></symbol>
+    <symbol id="i-sliders" viewBox="0 0 24 24"><path d="M4 6h10M18 6h2M4 12h4M12 12h8M4 18h12M20 18h0"/><circle cx="16" cy="6" r="2"/><circle cx="10" cy="12" r="2"/><circle cx="18" cy="18" r="2"/></symbol>
+    <symbol id="i-plus" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></symbol>
+    <symbol id="i-x" viewBox="0 0 24 24"><path d="M6 6l12 12M18 6 6 18"/></symbol>
+    <symbol id="i-back" viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7"/></symbol>
+    <symbol id="i-pin" viewBox="0 0 24 24"><path d="M9 4h6l-1 6 4 3v2H6v-2l4-3z"/><path d="M12 15v6"/></symbol>
+    <symbol id="i-cal" viewBox="0 0 24 24"><rect x="4" y="5" width="16" height="15" rx="2"/><path d="M4 10h16M9 3v4M15 3v4"/></symbol>
+    <symbol id="i-trash" viewBox="0 0 24 24"><path d="M4 7h16M10 11v6M14 11v6M6 7l1 13h10l1-13M9 7V4h6v3"/></symbol>
+    <symbol id="i-check" viewBox="0 0 24 24"><rect x="4" y="4" width="16" height="16" rx="3"/><path d="m8.5 12 2.5 2.5 4.5-5"/></symbol>
+    <symbol id="i-list" viewBox="0 0 24 24"><path d="M9 6h11M9 12h11M9 18h11"/><circle cx="4.5" cy="6" r=".6"/><circle cx="4.5" cy="12" r=".6"/><circle cx="4.5" cy="18" r=".6"/></symbol>
+    <symbol id="i-del" viewBox="0 0 24 24"><path d="M9 6h10a1 1 0 0 1 1 1v10a1 1 0 0 1-1 1H9l-6-6z"/><path d="m12 10 4 4M16 10l-4 4"/></symbol>
+    <symbol id="i-finger" viewBox="0 0 24 24"><path d="M7.5 4.8A8 8 0 0 1 20 11.5v1.2"/><path d="M4.3 8.5A8 8 0 0 0 4 11v2.5"/><path d="M8 18.5c.6-1.7 1-3.5 1-5.5v-1.5a3 3 0 0 1 6 0V13c0 2.3-.4 4.4-1.2 6.4"/><path d="M12 11.5V13c0 3-.7 5.7-2 8"/><path d="M17.8 15.5c-.3 1.7-.8 3.3-1.4 4.8"/><path d="M6.4 15.6c-.3 1-.7 2-1.2 2.9"/></symbol>
+    <symbol id="i-tag" viewBox="0 0 24 24"><path d="M3 12V4h8l9 9-8 8z"/><circle cx="7.5" cy="8.5" r="1.2"/></symbol>
+    <symbol id="i-eye" viewBox="0 0 24 24"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></symbol>
+  </defs>
+</svg>
+
+<section id="lock" aria-live="polite">
+  <div class="mark" aria-hidden="true"><svg class="ico"><use href="#i-vault"/></svg></div>
+  <div>
+    <h1 id="lockTitle">Bóveda de Notas</h1>
+    <p id="lockSub">Cargando…</p>
+  </div>
+  <div class="dots" id="dots" aria-hidden="true"><span></span><span></span><span></span><span></span></div>
+  <p id="lockMsg" role="status"></p>
+  <div class="pad" id="pad"></div>
+  <div class="lock-actions" id="lockActions"></div>
+  <p class="lock-foot" id="lockFoot"></p>
+</section>
+
+<div id="app" hidden>
+  <div id="listPane">
+    <header class="topbar">
+      <div class="topbar-row">
+        <div class="brand"><div class="mark" aria-hidden="true"><svg class="ico"><use href="#i-vault"/></svg></div><span class="brand-name">Bóveda</span></div>
+        <div class="search">
+          <svg class="ico"><use href="#i-search"/></svg>
+          <label for="q" class="sr">Buscar en tus notas</label>
+          <input id="q" type="search" placeholder="Buscar…" autocomplete="off" spellcheck="false" enterkeyhint="search">
+          <span class="kbd" id="qKbd" aria-hidden="true">Ctrl K</span>
+          <button class="icon-btn" id="qClear" hidden aria-label="Borrar búsqueda"><svg class="ico"><use href="#i-x"/></svg></button>
+        </div>
+        <button class="icon-btn" id="btnLock" aria-label="Bloquear ahora" title="Bloquear (Alt+L)"><svg class="ico"><use href="#i-lock"/></svg></button>
+        <button class="icon-btn" id="btnSettings" aria-label="Ajustes" title="Ajustes"><svg class="ico"><use href="#i-sliders"/></svg></button>
+      </div>
+      <nav class="chips" id="chips" aria-label="Filtros"></nav>
+    </header>
+    <main id="main"></main>
+  </div>
+
+  <section id="editor" aria-label="Editor de nota">
+    <div class="ed-head">
+      <button class="icon-btn" id="edClose" aria-label="Cerrar nota"><svg class="ico"><use href="#i-back"/></svg></button>
+      <div class="spacer"></div>
+      <span id="saveState" aria-live="polite"></span>
+      <button class="icon-btn" id="edPin" aria-pressed="false" aria-label="Fijar nota arriba"><svg class="ico"><use href="#i-pin"/></svg></button>
+      <button class="icon-btn" id="edDelete" aria-label="Eliminar nota"><svg class="ico"><use href="#i-trash"/></svg></button>
+    </div>
+    <div class="ed-body" id="edScroll">
+      <div class="ed-inner">
+        <label for="edTitle" class="sr">Título</label>
+        <input id="edTitle" placeholder="Título" autocomplete="off" enterkeyhint="next">
+        <div class="ed-row">
+          <div class="swatches" id="swatches" role="radiogroup" aria-label="Color de la nota"></div>
+          <div class="datefield" id="dateField">
+            <svg class="ico"><use href="#i-cal"/></svg>
+            <label for="edDate" class="sr">Fecha para el calendario</label>
+            <input id="edDate" type="date">
+            <label for="edTime" class="sr">Hora</label>
+            <input id="edTime" type="time" hidden>
+            <button class="icon-btn" id="edDateClear" hidden aria-label="Quitar fecha"><svg class="ico"><use href="#i-x"/></svg></button>
+          </div>
+        </div>
+        <div class="tags-in" id="tagsIn">
+          <svg class="ico" style="color:var(--ink-3)"><use href="#i-tag"/></svg>
+          <span id="tagList" style="display:contents"></span>
+          <label for="tagInput" class="sr">Añadir etiqueta</label>
+          <input id="tagInput" placeholder="Añadir etiqueta" list="tagSuggest" autocomplete="off" enterkeyhint="done">
+          <datalist id="tagSuggest"></datalist>
+        </div>
+        <label for="edBody" class="sr">Contenido</label>
+        <textarea id="edBody" placeholder="Escribe aquí. Empieza una línea con - [ ] para una casilla, - para una lista o ## para un título."></textarea>
+        <div id="edView" hidden></div>
+      </div>
+    </div>
+    <div class="ed-tools" role="toolbar" aria-label="Formato">
+      <button class="tb" data-fmt="todo" title="Casilla"><svg class="ico"><use href="#i-check"/></svg><span>Casilla</span></button>
+      <button class="tb" data-fmt="list" title="Lista"><svg class="ico"><use href="#i-list"/></svg></button>
+      <button class="tb" data-fmt="h" title="Título de sección">H</button>
+      <button class="tb" data-fmt="b" title="Negrita" style="font-weight:800">B</button>
+      <div class="seg" role="group" aria-label="Modo">
+        <button id="modeEdit" aria-pressed="true">Escribir</button>
+        <button id="modeView" aria-pressed="false">Ver</button>
+      </div>
+    </div>
+  </section>
+
+  <button id="fab"><svg class="ico"><use href="#i-plus"/></svg><span>Nota</span></button>
+</div>
+
+<div id="toasts" aria-live="polite"></div>
+
+<script>
+(() => {
+'use strict';
+/* ================= Utilidades ================= */
+const $ = (s, r = document) => r.querySelector(s);
+const enc = new TextEncoder(), dec = new TextDecoder();
+const rand = n => crypto.getRandomValues(new Uint8Array(n));
+const b64 = buf => { const u = buf instanceof Uint8Array ? buf : new Uint8Array(buf); let s = ''; for (let i = 0; i < u.length; i += 0x8000) s += String.fromCharCode.apply(null, u.subarray(i, i + 0x8000)); return btoa(s); };
+const unb64 = s => Uint8Array.from(atob(s), c => c.charCodeAt(0));
+const uid = () => Array.from(rand(9), b => b.toString(36).padStart(2, '0')).join('').slice(0, 14);
+const esc = s => String(s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+const norm = s => String(s || '').normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase();
+const pad2 = n => String(n).padStart(2, '0');
+const todayISO = () => { const d = new Date(); return `${d.getFullYear()}-${pad2(d.getMonth() + 1)}-${pad2(d.getDate())}`; };
+const isoToDate = iso => { const [y, m, d] = iso.split('-').map(Number); return new Date(y, m - 1, d); };
+const addDaysISO = (n) => { const d = new Date(); d.setDate(d.getDate() + n); return `${d.getFullYear()}-${pad2(d.getMonth() + 1)}-${pad2(d.getDate())}`; };
+const inFrame = (() => { try { return window.self !== window.top; } catch { return true; } })();
+const ITER = 600000;
+const COLORS = ['none', 'rojo', 'naranja', 'amarillo', 'verde', 'azul', 'lila', 'gris'];
+const COLOR_NAMES = { none: 'Sin color', rojo: 'Rojo', naranja: 'Naranja', amarillo: 'Amarillo', verde: 'Verde', azul: 'Azul', lila: 'Lila', gris: 'Gris' };
+const ico = (id, cls = 'ico') => `<svg class="${cls}"><use href="#i-${id}"/></svg>`;
+
+/* ================= Almacenamiento (IndexedDB) ================= */
+const Store = {
+  db: null, mem: null,
+  open() {
+    return new Promise(res => {
+      let req;
+      try { req = indexedDB.open('boveda-notas', 1); } catch { this.mem = { meta: new Map(), notes: new Map() }; return res(); }
+      req.onupgradeneeded = () => { const db = req.result; db.createObjectStore('meta'); db.createObjectStore('notes', { keyPath: 'id' }); };
+      req.onsuccess = () => { this.db = req.result; res(); };
+      req.onerror = () => { this.mem = { meta: new Map(), notes: new Map() }; res(); };
+    });
+  },
+  tx(store, mode, fn) {
+    if (this.mem) return Promise.resolve(fn(null, this.mem[store]));
+    return new Promise((res, rej) => {
+      const t = this.db.transaction(store, mode); const os = t.objectStore(store); let out;
+      const r = fn(os); if (r && 'onsuccess' in r) r.onsuccess = () => { out = r.result; };
+      t.oncomplete = () => res(out); t.onerror = () => rej(t.error); t.onabort = () => rej(t.error);
+    });
+  },
+  get(store, key) { return this.tx(store, 'readonly', (os, m) => m ? m.get(key) : os.get(key)); },
+  put(store, val, key) { return this.tx(store, 'readwrite', (os, m) => { if (m) { m.set(key ?? val.id, structuredClone(val)); return; } return key === undefined ? os.put(val) : os.put(val, key); }); },
+  del(store, key) { return this.tx(store, 'readwrite', (os, m) => m ? void m.delete(key) : os.delete(key)); },
+  all(store) { return this.tx(store, 'readonly', (os, m) => m ? [...m.values()] : os.getAll()); },
+  async wipe() { if (this.mem) { this.mem.meta.clear(); this.mem.notes.clear(); return; } this.db.close(); await new Promise(r => { const q = indexedDB.deleteDatabase('boveda-notas'); q.onsuccess = q.onerror = q.onblocked = () => r(); }); }
+};
+
+/* ================= Cifrado ================= */
+async function pinKey(pin, salt, iter) {
+  const base = await crypto.subtle.importKey('raw', enc.encode(pin), 'PBKDF2', false, ['deriveKey']);
+  return crypto.subtle.deriveKey({ name: 'PBKDF2', salt, iterations: iter, hash: 'SHA-256' }, base, { name: 'AES-GCM', length: 256 }, false, ['encrypt', 'decrypt']);
+}
+async function seal(key, bytes) { const iv = rand(12); const ct = await crypto.subtle.encrypt({ name: 'AES-GCM', iv }, key, bytes); return { iv: b64(iv), ct: b64(ct) }; }
+async function open_(key, w) { return new Uint8Array(await crypto.subtle.decrypt({ name: 'AES-GCM', iv: unb64(w.iv) }, key, unb64(w.ct))); }
+const importDek = raw => crypto.subtle.importKey('raw', raw, 'AES-GCM', false, ['encrypt', 'decrypt']);
+async function bioKey(prfOut) {
+  const base = await crypto.subtle.importKey('raw', prfOut, 'HKDF', false, ['deriveKey']);
+  return crypto.subtle.deriveKey({ name: 'HKDF', hash: 'SHA-256', salt: enc.encode('boveda-bio-v1'), info: enc.encode('dek-wrap') }, base, { name: 'AES-GCM', length: 256 }, false, ['encrypt', 'decrypt']);
+}
+async function encNote(n) { const w = await seal(S.dek, enc.encode(JSON.stringify(n))); return { id: n.id, ...w }; }
+async function decNote(rec, key = S.dek) { return JSON.parse(dec.decode(await open_(key, rec))); }
+
+/* ================= Huella (WebAuthn + PRF) ================= */
+async function bioAvailable() {
+  try { return !!(window.PublicKeyCredential && window.isSecureContext && await PublicKeyCredential.isUserVerifyingPlatformAuthenticatorAvailable()); } catch { return false; }
+}
+async function bioGet(credId, prfSalt) {
+  const a = await navigator.credentials.get({ publicKey: { challenge: rand(32), allowCredentials: [{ type: 'public-key', id: credId }], userVerification: 'required', timeout: 60000, extensions: { prf: { eval: { first: prfSalt } } } } });
+  const r = a.getClientExtensionResults();
+  if (!r.prf || !r.prf.results || !r.prf.results.first) throw new Error('noprf');
+  return new Uint8Array(r.prf.results.first);
+}
+async function enableBio() {
+  const prfSalt = rand(32);
+  const cred = await navigator.credentials.create({ publicKey: {
+    rp: { name: 'Bóveda de Notas' }, user: { id: rand(16), name: 'boveda', displayName: 'Bóveda de Notas' },
+    challenge: rand(32), pubKeyCredParams: [{ type: 'public-key', alg: -7 }, { type: 'public-key', alg: -257 }],
+    authenticatorSelection: { authenticatorAttachment: 'platform', userVerification: 'required', residentKey: 'preferred' },
+    timeout: 60000, extensions: { prf: { eval: { first: prfSalt } } } } });
+  const ext = cred.getClientExtensionResults();
+  if (!ext.prf || ext.prf.enabled === false) throw new Error('noprf');
+  const credId = new Uint8Array(cred.rawId);
+  let out = ext.prf.results && ext.prf.results.first ? new Uint8Array(ext.prf.results.first) : await bioGet(credId, prfSalt);
+  const w = await seal(await bioKey(out), S.dekRaw);
+  S.meta.bio = { credId: b64(credId), prfSalt: b64(prfSalt), ...w };
+  await saveMeta();
+}
+function bioError(e) {
+  if (e && e.message === 'noprf') return 'Este navegador no permite usar la huella para cifrar. Sigue usando tu PIN. Si se creó una llave «Bóveda de Notas» en tu gestor de contraseñas, puedes borrarla.';
+  if (e && e.name === 'NotAllowedError') return 'Se canceló la huella o tardó demasiado. Inténtalo otra vez o usa el PIN.';
+  if (e && e.name === 'SecurityError') return 'La huella solo funciona en la app instalada desde tu propia dirección https.';
+  return 'No se pudo usar la huella en este dispositivo. Usa el PIN.';
+}
+
+/* ================= Estado ================= */
+const S = { meta: null, dek: null, dekRaw: null, notes: new Map(), q: '', filter: 'all', openId: null, mode: 'edit', hiddenAt: 0, idle: null, saveT: null, dirty: false };
+async function saveMeta() { await Store.put('meta', S.meta, 'vault'); }
+function applyTheme() {
+  const t = S.meta?.settings?.theme || 'system';
+  if (t === 'system') document.documentElement.removeAttribute('data-theme'); else document.documentElement.setAttribute('data-theme', t);
+}
+
+/* ================= Pantalla de bloqueo ================= */
+const L = { stage: 'unlock', buf: '', first: '', busy: false };
+function buildPad(withBio) {
+  const pad = $('#pad'); pad.innerHTML = '';
+  const keys = ['1', '2', '3', '4', '5', '6', '7', '8', '9', withBio ? 'bio' : '', '0', 'del'];
+  for (const k of keys) {
+    const b = document.createElement('button');
+    if (k === '') { b.className = 'key ghost'; b.disabled = true; b.setAttribute('aria-hidden', 'true'); b.tabIndex = -1; }
+    else if (k === 'bio') { b.className = 'key ghost bio'; b.innerHTML = ico('finger'); b.setAttribute('aria-label', 'Desbloquear con huella'); b.onclick = unlockBio; }
+    else if (k === 'del') { b.className = 'key ghost'; b.innerHTML = ico('del'); b.setAttribute('aria-label', 'Borrar dígito'); b.onclick = () => pinInput('del'); }
+    else { b.className = 'key'; b.textContent = k; b.onclick = () => pinInput(k); }
+    pad.appendChild(b);
+  }
+}
+function setDots(n) { [...$('#dots').children].forEach((d, i) => d.classList.toggle('on', i < n)); }
+function lockMsg(t, err = false) { const m = $('#lockMsg'); m.textContent = t || ''; m.classList.toggle('err', err); }
+function shake() { const d = $('#dots'); d.classList.remove('shake'); void d.offsetWidth; d.classList.add('shake'); if (navigator.vibrate) try { navigator.vibrate(80); } catch {} }
+function lockedFor() { return Math.max(0, (S.meta?.lockUntil || 0) - Date.now()); }
+
+function showLock(stage, autoBio = false) {
+  L.stage = stage; L.buf = ''; L.busy = false; setDots(0); lockMsg('');
+  $('#app').hidden = true; $('#lock').hidden = false; document.body.classList.remove('editing');
+  const t = $('#lockTitle'), s = $('#lockSub'), act = $('#lockActions'); act.innerHTML = '';
+  $('#dots').hidden = false; $('#pad').hidden = false;
+  $('#lockFoot').textContent = inFrame ? 'Vista previa: la huella y la instalación solo funcionan en la versión alojada en tu propia dirección.' : '';
+  if (stage === 'setup1') { t.textContent = 'Crea tu PIN'; s.textContent = 'Elige 4 dígitos. Con ellos se cifran tus notas en este dispositivo.'; buildPad(false); }
+  else if (stage === 'setup2') { t.textContent = 'Repite el PIN'; s.textContent = 'Escríbelo otra vez para confirmarlo.'; buildPad(false); }
+  else if (stage === 'bio') {
+    t.textContent = '¿Activar la huella?'; s.textContent = 'Abrirás la bóveda con tu huella. El PIN seguirá funcionando siempre.';
+    $('#dots').hidden = true; $('#pad').hidden = true;
+    const yes = document.createElement('button'); yes.className = 'btn primary'; yes.innerHTML = ico('finger') + 'Activar huella';
+    const no = document.createElement('button'); no.className = 'btn quiet'; no.textContent = 'Ahora no';
+    yes.onclick = async () => { yes.disabled = true; try { await enableBio(); toast('Huella activada'); enterApp(); } catch (e) { lockMsg(bioError(e), true); yes.disabled = false; } };
+    no.onclick = () => enterApp();
+    act.append(yes, no);
+  } else {
+    t.textContent = 'Bóveda de Notas'; s.textContent = S.meta.bio ? 'Usa tu huella o escribe tu PIN.' : 'Escribe tu PIN de 4 dígitos.';
+    buildPad(!!S.meta.bio); tickLockout();
+    if (autoBio && S.meta.bio && !lockedFor() && document.visibilityState === 'visible' && !inFrame) setTimeout(() => unlockBio(true), 250);
+  }
+}
+let lockTimer = null;
+function tickLockout() {
+  clearTimeout(lockTimer);
+  const ms = lockedFor();
+  document.querySelectorAll('#pad .key:not(.bio)').forEach(k => { if (k.textContent) k.disabled = ms > 0; });
+  if (ms > 0) { lockMsg(`Demasiados intentos. Espera ${Math.ceil(ms / 1000)} s.`, true); lockTimer = setTimeout(tickLockout, 1000); }
+  else if (/Espera/.test($('#lockMsg').textContent)) lockMsg('');
+}
+async function pinInput(k) {
+  if (L.busy || (L.stage === 'unlock' && lockedFor())) return;
+  if (k === 'del') { L.buf = L.buf.slice(0, -1); setDots(L.buf.length); return; }
+  if (L.buf.length >= 4) return;
+  L.buf += k; setDots(L.buf.length);
+  if (L.buf.length < 4) return;
+  const pin = L.buf;
+  if (L.stage === 'setup1') { L.first = pin; setTimeout(() => showLock('setup2'), 160); return; }
+  if (L.stage === 'setup2') {
+    if (pin !== L.first) { shake(); lockMsg('Los PIN no coinciden. Empieza de nuevo.', true); setTimeout(() => { showLock('setup1'); lockMsg('Los PIN no coinciden. Empieza de nuevo.', true); }, 700); return; }
+    L.busy = true; $('#dots').classList.add('busy'); lockMsg('Creando tu bóveda cifrada…');
+    await createVault(pin); $('#dots').classList.remove('busy');
+    if (await bioAvailable() && !inFrame) showLock('bio'); else enterApp();
+    return;
+  }
+  L.busy = true; $('#dots').classList.add('busy'); lockMsg('Comprobando…');
+  const ok = await tryPin(pin);
+  $('#dots').classList.remove('busy'); L.busy = false;
+  if (ok) { await enterApp(); return; }
+  L.buf = ''; setDots(0); shake();
+  S.meta.fails = (S.meta.fails || 0) + 1;
+  if (S.meta.fails >= 5) { S.meta.lockUntil = Date.now() + Math.min(900000, 30000 * 2 ** (S.meta.fails - 5)); }
+  await saveMeta();
+  const left = 5 - S.meta.fails;
+  if (left > 0) lockMsg(`PIN incorrecto. ${left === 1 ? 'Queda 1 intento' : `Quedan ${left} intentos`} antes de una espera.`, true);
+  tickLockout();
+}
+async function createVault(pin) {
+  const salt = rand(16); const raw = rand(32);
+  const kek = await pinKey(pin, salt, ITER);
+  S.meta = { v: 1, salt: b64(salt), iter: ITER, pinWrap: await seal(kek, raw), created: Date.now(), fails: 0, lockUntil: 0, bio: null,
+    settings: { autolock: 1, theme: S.meta?.settings?.theme || 'system' } };
+  S.dekRaw = raw; S.dek = await importDek(raw);
+  await saveMeta();
+  for (const n of sampleNotes()) { S.notes.set(n.id, n); await Store.put('notes', await encNote(n)); }
+  try { navigator.storage && navigator.storage.persist && navigator.storage.persist(); } catch {}
+}
+async function tryPin(pin) {
+  try {
+    const kek = await pinKey(pin, unb64(S.meta.salt), S.meta.iter);
+    const raw = await open_(kek, S.meta.pinWrap);
+    S.dekRaw = raw; S.dek = await importDek(raw);
+    S.meta.fails = 0; S.meta.lockUntil = 0; await saveMeta();
+    return true;
+  } catch { return false; }
+}
+async function unlockBio(silent) {
+  if (L.busy || !S.meta?.bio) return;
+  L.busy = true; lockMsg(silent ? '' : 'Esperando la huella…');
+  try {
+    const out = await bioGet(unb64(S.meta.bio.credId), unb64(S.meta.bio.prfSalt));
+    const raw = await open_(await bioKey(out), S.meta.bio);
+    S.dekRaw = raw; S.dek = await importDek(raw);
+    S.meta.fails = 0; S.meta.lockUntil = 0; await saveMeta();
+    L.busy = false; await enterApp();
+  } catch (e) { L.busy = false; if (!silent) lockMsg(bioError(e), true); else lockMsg(''); }
+}
+document.addEventListener('keydown', e => {
+  if ($('#lock').hidden || $('#pad').hidden || document.querySelector('.scrim')) return;
+  if (/^[0-9]$/.test(e.key)) { e.preventDefault(); pinInput(e.key); }
+  else if (e.key === 'Backspace') { e.preventDefault(); pinInput('del'); }
+});
+
+/* ================= Entrar / bloquear ================= */
+async function enterApp() {
+  S.notes.clear();
+  const recs = await Store.all('notes'); let bad = 0;
+  for (const r of recs) { try { const n = await decNote(r); S.notes.set(n.id, n); } catch { bad++; } }
+  $('#lock').hidden = true; $('#app').hidden = false;
+  render(true); armIdle();
+  if (bad) toast(`${bad} nota(s) no se pudieron descifrar.`);
+  if (!inFrame && history.state?.ed) history.replaceState(null, '');
+}
+async function lockNow() {
+  if (!S.dek) return;
+  await flushSave();
+  closeModal(); closeEditor(true);
+  S.dek = null; S.dekRaw = null; S.notes.clear(); S.q = ''; $('#q').value = ''; $('#main').innerHTML = '';
+  clearTimeout(S.idle);
+  showLock('unlock');
+}
+function idleMs() { const m = S.meta?.settings?.autolock ?? 1; return (m === 0 ? 2 : m) * 60000; }
+function armIdle() { clearTimeout(S.idle); if (S.dek) S.idle = setTimeout(lockNow, idleMs()); }
+['pointerdown', 'keydown', 'input', 'wheel', 'touchstart'].forEach(ev => document.addEventListener(ev, () => { if (S.dek) armIdle(); }, { passive: true, capture: true }));
+document.addEventListener('visibilitychange', async () => {
+  if (!S.dek) { if (document.visibilityState === 'visible' && L.stage === 'unlock' && !$('#lock').hidden && S.meta?.bio && !lockedFor() && !inFrame) setTimeout(() => unlockBio(true), 250); return; }
+  if (document.visibilityState === 'hidden') { S.hiddenAt = Date.now(); await flushSave(); if ((S.meta.settings.autolock ?? 1) === 0) lockNow(); }
+  else if (S.hiddenAt && Date.now() - S.hiddenAt > idleMs()) lockNow();
+});
+
+/* ================= Notas de ejemplo ================= */
+function sampleNotes() {
+  const now = Date.now();
+  return [
+    { id: uid(), title: 'Cómo funciona tu bóveda', color: 'verde', pinned: true, tags: ['ejemplo'], date: null, time: null, calendarEventId: null, createdAt: now, updatedAt: now,
+      body: '## Lo básico\nTodo se cifra en este dispositivo antes de guardarse. Sin tu PIN o tu huella nadie puede leerlo.\n\n- Busca con **/** o **Ctrl K**; escribe #etiqueta para filtrar\n- Pon una fecha a una nota y aparecerá en *Próximas fechas* (y en el calendario cuando lo hagamos)\n- Haz una copia cifrada en Ajustes de vez en cuando\n\n- [x] Crear el PIN\n- [ ] Activar la huella\n- [ ] Borrar estas notas de ejemplo' },
+    { id: uid(), title: 'Tareas de la semana', color: 'amarillo', pinned: false, tags: ['ejemplo', 'tareas'], date: null, time: null, calendarEventId: null, createdAt: now - 3600e3, updatedAt: now - 3600e3,
+      body: '- [ ] Repasar el tema 4\n- [x] Entregar el trabajo de grupo\n- [ ] Llamar al banco\n- [ ] Comprar pilas' },
+    { id: uid(), title: 'Renovar el DNI', color: 'azul', pinned: false, tags: ['ejemplo', 'trámites'], date: addDaysISO(4), time: '10:30', calendarEventId: null, createdAt: now - 7200e3, updatedAt: now - 7200e3,
+      body: 'Cita en la comisaría. Llevar:\n- DNI actual\n- Una foto reciente\n- 12 € en efectivo' },
+  ];
+}
+
+/* ================= Render: Markdown ligero ================= */
+function inline(s) {
+  return esc(s).replace(/`([^`]+)`/g, '<code>$1</code>').replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>').replace(/(^|[^*])\*([^*\s][^*]*)\*/g, '$1<em>$2</em>');
+}
+function renderMd(src, maxLines = Infinity) {
+  const lines = String(src || '').split('\n'); let out = '', list = false, count = 0;
+  const closeList = () => { if (list) { out += '</ul>'; list = false; } };
+  for (let i = 0; i < lines.length && count < maxLines; i++) {
+    const ln = lines[i]; let m;
+    if ((m = ln.match(/^\s*[-*] \[( |x|X)\] ?(.*)$/))) {
+      if (!list) { out += '<ul>'; list = true; }
+      const done = m[1] !== ' ';
+      out += `<li class="todo${done ? ' done' : ''}"><input type="checkbox" data-line="${i}" ${done ? 'checked' : ''} aria-label="Marcar tarea"><span>${inline(m[2])}</span></li>`; count++; continue;
+    }
+    if ((m = ln.match(/^\s*[-*] (.*)$/))) { if (!list) { out += '<ul>'; list = true; } out += `<li>${inline(m[1])}</li>`; count++; continue; }
+    closeList();
+    if ((m = ln.match(/^#{1,3} (.*)$/))) { out += `<h4>${inline(m[1])}</h4>`; count++; continue; }
+    if (!ln.trim()) { if (out && !out.endsWith('<div class="gap"></div>')) out += '<div class="gap"></div>'; continue; }
+    out += `<p>${inline(ln)}</p>`; count++;
+  }
+  closeList();
+  return out;
+}
+function highlight(root, terms) {
+  if (!terms.length) return;
+  const walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT); const nodes = [];
+  while (walker.nextNode()) nodes.push(walker.currentNode);
+  for (const t of nodes) {
+    const txt = t.nodeValue; let n = '';
+    for (let i = 0; i < txt.length; i++) { const c = norm(txt[i]); n += c.length === 1 ? c : txt[i]; }
+    if (n.length !== txt.length) continue;
+    const ranges = [];
+    for (const term of terms) { let i = 0; while ((i = n.indexOf(term, i)) !== -1) { ranges.push([i, i + term.length]); i += term.length; } }
+    if (!ranges.length) continue;
+    ranges.sort((a, b) => a[0] - b[0]);
+    const merged = []; for (const r of ranges) { const l = merged[merged.length - 1]; if (l && r[0] <= l[1]) l[1] = Math.max(l[1], r[1]); else merged.push([...r]); }
+    const frag = document.createDocumentFragment(); let pos = 0;
+    for (const [a, b] of merged) { if (a > pos) frag.append(txt.slice(pos, a)); const mk = document.createElement('mark'); mk.textContent = txt.slice(a, b); frag.append(mk); pos = b; }
+    if (pos < txt.length) frag.append(txt.slice(pos));
+    t.replaceWith(frag);
+  }
+}
+
+/* ================= Búsqueda ================= */
+function parseQuery(q) {
+  const parts = norm(q).split(/\s+/).filter(Boolean);
+  return { tags: parts.filter(p => p.startsWith('#') && p.length > 1).map(p => p.slice(1)), terms: parts.filter(p => !p.startsWith('#')) };
+}
+function visibleNotes() {
+  const { tags, terms } = parseQuery(S.q); const today = todayISO();
+  let list = [...S.notes.values()].filter(n => !n._new);
+  if (S.filter === 'pinned') list = list.filter(n => n.pinned);
+  else if (S.filter === 'dated') list = list.filter(n => n.date);
+  else if (S.filter.startsWith('tag:')) { const t = S.filter.slice(4); list = list.filter(n => n.tags.some(x => norm(x) === t)); }
+  else if (S.filter.startsWith('color:')) { const c = S.filter.slice(6); list = list.filter(n => n.color === c); }
+  if (tags.length) list = list.filter(n => tags.every(t => n.tags.some(x => norm(x).startsWith(t))));
+  if (terms.length) {
+    const scored = [];
+    for (const n of list) {
+      const T = norm(n.title), B = norm(n.body), G = norm(n.tags.join(' ')); let score = 0, ok = true;
+      for (const t of terms) { const inT = T.includes(t), inG = G.includes(t), inB = B.includes(t); if (!inT && !inG && !inB) { ok = false; break; } score += (inT ? 6 : 0) + (inG ? 3 : 0) + (inB ? 1 : 0) + (T.startsWith(t) ? 2 : 0); }
+      if (ok) scored.push([score + (n.pinned ? 1 : 0), n]);
+    }
+    return scored.sort((a, b) => b[0] - a[0] || b[1].updatedAt - a[1].updatedAt).map(x => x[1]);
+  }
+  return list.sort((a, b) => b.updatedAt - a.updatedAt);
+}
+
+/* ================= Render: lista ================= */
+const fmtDay = new Intl.DateTimeFormat('es-ES', { weekday: 'short' });
+const fmtMon = new Intl.DateTimeFormat('es-ES', { month: 'short' });
+const fmtLong = new Intl.DateTimeFormat('es-ES', { weekday: 'short', day: 'numeric', month: 'short' });
+function relDay(iso) {
+  const t = isoToDate(todayISO()), d = isoToDate(iso); const diff = Math.round((d - t) / 864e5);
+  if (diff === 0) return 'Hoy'; if (diff === 1) return 'Mañana'; if (diff === -1) return 'Ayer';
+  if (diff > 1 && diff < 7) return `En ${diff} días`;
+  return fmtLong.format(d);
+}
+function relTime(ts) {
+  const s = (Date.now() - ts) / 1000;
+  if (s < 60) return 'ahora'; if (s < 3600) return `hace ${Math.floor(s / 60)} min`; if (s < 86400) return `hace ${Math.floor(s / 3600)} h`;
+  const d = new Date(ts); return `${d.getDate()} ${fmtMon.format(d).replace('.', '')}`;
+}
+function cardHTML(n) {
+  const lines = (n.body || '').split('\n').length;
+  const past = n.date && n.date < todayISO();
+  return `<article class="card" data-id="${n.id}" data-c="${n.color}" style="background:var(--n-${n.color})" tabindex="0" role="button" aria-label="Abrir ${esc(n.title || 'nota sin título')}">
+    ${n.pinned ? `<span class="pin" title="Fijada">${ico('pin')}</span>` : ''}
+    ${n.title ? `<h3>${esc(n.title)}</h3>` : ''}
+    ${n.body ? `<div class="md${lines <= 9 ? ' short' : ''}">${renderMd(n.body, 14)}</div>` : (n.title ? '' : '<div class="md"><p>Nota vacía</p></div>')}
+    <div class="meta">
+      ${n.date ? `<span class="datechip${past ? ' past' : ''}">${ico('cal')}${esc(relDay(n.date))}${n.time ? ' · ' + esc(n.time) : ''}</span>` : ''}
+      ${n.tags.map(t => `<button class="tag" data-tag="${esc(norm(t))}">#${esc(t)}</button>`).join('')}
+      <span class="when">${relTime(n.updatedAt)}</span>
+    </div></article>`;
+}
+function renderChips() {
+  const all = [...S.notes.values()]; const tagCount = new Map();
+  for (const n of all) for (const t of n.tags) { const k = norm(t); const e = tagCount.get(k) || { label: t, n: 0 }; e.n++; tagCount.set(k, e); }
+  const items = [['all', 'Todas', all.length], ['pinned', 'Fijadas', all.filter(n => n.pinned).length], ['dated', 'Con fecha', all.filter(n => n.date).length]];
+  const tagsSorted = [...tagCount.entries()].sort((a, b) => b[1].n - a[1].n);
+  let h = items.map(([k, l, c]) => `<button class="chip" data-f="${k}" aria-pressed="${S.filter === k}">${l} <span class="n">${c}</span></button>`).join('');
+  h += tagsSorted.map(([k, e]) => `<button class="chip" data-f="tag:${esc(k)}" aria-pressed="${S.filter === 'tag:' + k}">#${esc(e.label)} <span class="n">${e.n}</span></button>`).join('');
+  $('#chips').innerHTML = h;
+  $('#tagSuggest').innerHTML = tagsSorted.map(([, e]) => `<option value="${esc(e.label)}">`).join('');
+}
+function render(animate = false) {
+  if (!S.dek) return;
+  renderChips();
+  const list = visibleNotes(); const main = $('#main'); const { terms } = parseQuery(S.q);
+  const searching = !!S.q.trim(); let h = '';
+  if (!searching && S.filter === 'all') {
+    const today = todayISO(), lim = addDaysISO(30);
+    const up = [...S.notes.values()].filter(n => n.date && n.date >= today && n.date <= lim).sort((a, b) => (a.date + (a.time || '')).localeCompare(b.date + (b.time || '')));
+    if (up.length) {
+      h += `<div class="sec-title"><span>Próximas fechas</span><span class="count">${up.length}</span></div><div class="upcoming">` +
+        up.map(n => { const d = isoToDate(n.date); return `<button class="up" data-id="${n.id}"><span class="day"><small>${esc(fmtDay.format(d).replace('.', ''))}</small><b>${d.getDate()}</b></span><span class="txt"><span>${esc(n.title || 'Sin título')}</span><small>${esc(relDay(n.date))}${n.time ? ' · ' + esc(n.time) : ''}</small></span></button>`; }).join('') + '</div>';
+    }
+  }
+  if (!S.notes.size) {
+    h += `<div class="empty"><div class="ill">${ico('vault')}</div><h2>Tu bóveda está vacía</h2><p>Pulsa «Nota» para escribir la primera. Todo lo que guardes aquí se cifra en este dispositivo.</p></div>`;
+  } else if (!list.length) {
+    h += `<div class="empty"><div class="ill">${ico('search')}</div><h2>Nada coincide${searching ? ` con «${esc(S.q.trim())}»` : ''}</h2><p>Prueba con otra palabra${S.filter !== 'all' ? ' o pulsa «Todas» para quitar el filtro' : ''}.</p></div>`;
+  } else if (searching || S.filter !== 'all') {
+    h += `<div class="sec-title"><span>${searching ? 'Resultados' : 'Notas'}</span><span class="count">${list.length}</span></div><div class="wall">${list.map(cardHTML).join('')}</div>`;
+  } else {
+    const pinned = list.filter(n => n.pinned), rest = list.filter(n => !n.pinned);
+    if (pinned.length) h += `<div class="sec-title"><span>Fijadas</span><span class="count">${pinned.length}</span></div><div class="wall">${pinned.map(cardHTML).join('')}</div>`;
+    if (rest.length) h += `<div class="sec-title"><span>${pinned.length ? 'Otras notas' : 'Notas'}</span><span class="count">${rest.length}</span></div><div class="wall">${rest.map(cardHTML).join('')}</div>`;
+  }
+  main.classList.toggle('fresh', animate);
+  main.innerHTML = h;
+  if (terms.length) main.querySelectorAll('.card').forEach(c => highlight(c, terms));
+  if (S.openId) main.querySelector(`.card[data-id="${S.openId}"]`)?.classList.add('active');
+}
+
+/* ================= Interacción con la lista ================= */
+$('#main').addEventListener('click', e => {
+  const cb = e.target.closest('input[type="checkbox"][data-line]');
+  const card = e.target.closest('.card, .up');
+  if (cb && card) { e.stopPropagation(); toggleLine(card.dataset.id, +cb.dataset.line); return; }
+  const tag = e.target.closest('.tag[data-tag]');
+  if (tag) { e.stopPropagation(); S.filter = 'tag:' + tag.dataset.tag; render(); $('#listPane').scrollTo({ top: 0, behavior: 'smooth' }); return; }
+  if (card) openEditor(card.dataset.id);
+});
+$('#main').addEventListener('keydown', e => { if ((e.key === 'Enter' || e.key === ' ') && e.target.classList.contains('card')) { e.preventDefault(); openEditor(e.target.dataset.id); } });
+$('#chips').addEventListener('click', e => { const c = e.target.closest('.chip'); if (!c) return; S.filter = c.dataset.f; render(); });
+async function toggleLine(id, idx) {
+  const n = S.notes.get(id); if (!n) return;
+  const lines = n.body.split('\n'); const ln = lines[idx]; if (ln == null) return;
+  lines[idx] = /\[ \]/.test(ln) ? ln.replace('[ ]', '[x]') : ln.replace(/\[(x|X)\]/, '[ ]');
+  n.body = lines.join('\n'); n.updatedAt = Date.now();
+  await Store.put('notes', await encNote(n));
+  if (S.openId === id) { $('#edBody').value = n.body; if (S.mode === 'view') renderView(); }
+  render();
+}
+
+/* Búsqueda */
+const qEl = $('#q');
+qEl.addEventListener('input', () => { S.q = qEl.value; $('#qClear').hidden = !S.q; $('#qKbd').hidden = !!S.q; render(); });
+$('#qClear').onclick = () => { qEl.value = ''; S.q = ''; $('#qClear').hidden = true; $('#qKbd').hidden = false; render(); qEl.focus(); };
+qEl.addEventListener('keydown', e => {
+  if (e.key === 'Escape') { if (qEl.value) $('#qClear').click(); else qEl.blur(); }
+  if (e.key === 'Enter') { const first = $('#main .card'); if (first) openEditor(first.dataset.id); }
+});
+if (/Mac|iPhone|iPad/.test(navigator.platform || '')) $('#qKbd').textContent = '⌘ K';
+if (matchMedia('(pointer:coarse)').matches) $('#qKbd').hidden = true;
+
+/* Atajos globales */
+document.addEventListener('keydown', e => {
+  if (!S.dek || document.querySelector('.scrim')) return;
+  const typing = /INPUT|TEXTAREA|SELECT/.test(document.activeElement?.tagName || '');
+  if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'k') { e.preventDefault(); qEl.focus(); qEl.select(); return; }
+  if (e.altKey && e.key.toLowerCase() === 'l') { e.preventDefault(); lockNow(); return; }
+  if (e.key === 'Escape' && S.openId) { e.preventDefault(); closeEditor(); return; }
+  if (typing) return;
+  if (e.key === '/') { e.preventDefault(); qEl.focus(); }
+  else if (e.key.toLowerCase() === 'n' && !e.ctrlKey && !e.metaKey && !e.altKey) { e.preventDefault(); newNote(); }
+});
+$('#btnLock').onclick = () => lockNow();
+$('#fab').onclick = () => newNote();
+
+/* ================= Editor ================= */
+const ed = { title: $('#edTitle'), body: $('#edBody'), view: $('#edView'), date: $('#edDate'), time: $('#edTime') };
+$('#swatches').innerHTML = COLORS.map(c => `<button class="sw" role="radio" data-c="${c}" style="--sw:var(--n-${c})" aria-label="${COLOR_NAMES[c]}" aria-checked="false"></button>`).join('');
+function cur() { return S.notes.get(S.openId); }
+function newNote() {
+  const now = Date.now();
+  const tagFromFilter = S.filter.startsWith('tag:') ? [...S.notes.values()].flatMap(n => n.tags).find(t => norm(t) === S.filter.slice(4)) : null;
+  const n = { id: uid(), title: '', body: '', color: 'none', pinned: S.filter === 'pinned', tags: tagFromFilter ? [tagFromFilter] : [], date: S.filter === 'dated' ? todayISO() : null, time: null, calendarEventId: null, createdAt: now, updatedAt: now, _new: true };
+  S.notes.set(n.id, n); openEditor(n.id, true);
+}
+function openEditor(id, isNew = false) {
+  const n = S.notes.get(id); if (!n) return;
+  if (S.openId && S.openId !== id) flushSave();
+  S.openId = id;
+  ed.title.value = n.title; ed.body.value = n.body;
+  fillEditorMeta(n);
+  setMode(isNew || !n.body ? 'edit' : (S.meta.settings.lastMode || 'edit'), false);
+  $('#saveState').textContent = isNew ? '' : 'Guardado';
+  const wasOpen = document.body.classList.contains('editing');
+  document.body.classList.add('editing');
+  $('#editor').style.setProperty('--ed-bg', `var(--n-${n.color})`);
+  if (!wasOpen && !inFrame && matchMedia('(max-width:959px)').matches) { try { history.pushState({ ed: 1 }, ''); } catch {} }
+  $('#edScroll').scrollTop = 0; autoGrow();
+  render();
+  setTimeout(() => { if (isNew) ed.title.focus(); }, 60);
+}
+function fillEditorMeta(n) {
+  document.querySelectorAll('#swatches .sw').forEach(b => b.setAttribute('aria-checked', String(b.dataset.c === n.color)));
+  $('#edPin').setAttribute('aria-pressed', String(!!n.pinned));
+  ed.date.value = n.date || ''; ed.time.value = n.time || '';
+  ed.time.hidden = !n.date; $('#edDateClear').hidden = !n.date; $('#dateField').classList.toggle('set', !!n.date);
+  $('#tagList').innerHTML = n.tags.map((t, i) => `<span class="tag">#${esc(t)}<button data-i="${i}" aria-label="Quitar etiqueta ${esc(t)}">${ico('x')}</button></span>`).join('');
+}
+function closeEditor(silent) {
+  if (!S.openId) return;
+  const n = cur(); flushSave();
+  if (n && !n.title.trim() && !n.body.trim()) { S.notes.delete(n.id); Store.del('notes', n.id); }
+  S.openId = null; document.body.classList.remove('editing');
+  if (!silent) render();
+  if (!inFrame && history.state?.ed) { try { history.back(); } catch {} }
+}
+window.addEventListener('popstate', () => { if (S.openId) closeEditor(); });
+$('#edClose').onclick = () => closeEditor();
+
+function touch() { const n = cur(); if (!n) return; n.updatedAt = Date.now(); delete n._new; S.dirty = true; $('#saveState').textContent = 'Guardando…'; clearTimeout(S.saveT); S.saveT = setTimeout(flushSave, 450); }
+async function flushSave() {
+  clearTimeout(S.saveT); if (!S.dirty || !S.dek) return; S.dirty = false;
+  const n = cur(); if (!n) return;
+  if (!n.title.trim() && !n.body.trim()) return;
+  const { _new, ...clean } = n;
+  try { await Store.put('notes', await encNote(clean)); $('#saveState').textContent = 'Guardado'; }
+  catch { $('#saveState').textContent = 'Error al guardar'; toast('No se pudo guardar. Comprueba el espacio libre del dispositivo.'); }
+  renderSoon();
+}
+let rT = null; function renderSoon() { clearTimeout(rT); rT = setTimeout(render, 120); }
+ed.title.addEventListener('input', () => { cur().title = ed.title.value; touch(); });
+ed.title.addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); setMode('edit'); ed.body.focus(); } });
+ed.body.addEventListener('input', () => { cur().body = ed.body.value; autoGrow(); touch(); });
+function autoGrow() { ed.body.style.height = 'auto'; ed.body.style.height = Math.max(ed.body.scrollHeight, window.innerHeight * 0.45) + 'px'; }
+
+/* Continuar listas al pulsar Intro */
+ed.body.addEventListener('keydown', e => {
+  if (e.key !== 'Enter' || e.shiftKey || e.isComposing) return;
+  const v = ed.body.value, p = ed.body.selectionStart; if (p !== ed.body.selectionEnd) return;
+  const ls = v.lastIndexOf('\n', p - 1) + 1; const line = v.slice(ls, p);
+  const m = line.match(/^(\s*)([-*] \[[ xX]\] |[-*] )(.*)$/); if (!m) return;
+  e.preventDefault();
+  if (!m[3].trim()) { ed.body.setRangeText('', ls, p, 'end'); }
+  else { const pre = m[1] + (m[2].includes('[') ? '- [ ] ' : '- '); ed.body.setRangeText('\n' + pre, p, p, 'end'); }
+  ed.body.dispatchEvent(new Event('input'));
+});
+/* Barra de formato */
+document.querySelector('.ed-tools').addEventListener('click', e => {
+  const b = e.target.closest('[data-fmt]'); if (!b) return;
+  setMode('edit');
+  const f = b.dataset.fmt, t = ed.body; t.focus();
+  const s = t.selectionStart, en = t.selectionEnd, v = t.value;
+  if (f === 'b') { const sel = v.slice(s, en) || 'texto'; t.setRangeText(`**${sel}**`, s, en, 'end'); if (s === en) t.setSelectionRange(s + 2, s + 2 + sel.length); }
+  else {
+    const pre = f === 'todo' ? '- [ ] ' : f === 'list' ? '- ' : '## ';
+    const ls = v.lastIndexOf('\n', s - 1) + 1; const line = v.slice(ls, v.indexOf('\n', ls) === -1 ? v.length : v.indexOf('\n', ls));
+    const stripped = line.replace(/^(\s*)([-*] \[[ xX]\] |[-*] |#{1,3} )/, '$1');
+    const already = line.startsWith(pre);
+    const nl = already ? stripped : pre + stripped.trimStart();
+    t.setRangeText(nl, ls, ls + line.length, 'end');
+  }
+  t.dispatchEvent(new Event('input'));
+});
+/* Modo escribir / ver */
+function renderView() { ed.view.innerHTML = cur()?.body ? `<div class="md">${renderMd(cur().body)}</div>` : '<p style="color:var(--ink-3)">Nota vacía. Pulsa aquí para escribir.</p>'; }
+function setMode(m, remember = true) {
+  S.mode = m; $('#modeEdit').setAttribute('aria-pressed', String(m === 'edit')); $('#modeView').setAttribute('aria-pressed', String(m === 'view'));
+  ed.body.hidden = m !== 'edit'; ed.view.hidden = m !== 'view';
+  if (m === 'view') renderView(); else autoGrow();
+  if (remember && S.meta) { S.meta.settings.lastMode = m; saveMeta(); }
+}
+$('#modeEdit').onclick = () => { setMode('edit'); ed.body.focus(); };
+$('#modeView').onclick = () => setMode('view');
+ed.view.addEventListener('click', e => {
+  const cb = e.target.closest('input[data-line]'); if (cb) { toggleLine(S.openId, +cb.dataset.line); return; }
+  setMode('edit'); ed.body.focus();
+});
+/* Color, fijar, fecha, etiquetas */
+$('#swatches').addEventListener('click', e => { const b = e.target.closest('.sw'); if (!b) return; cur().color = b.dataset.c; fillEditorMeta(cur()); $('#editor').style.setProperty('--ed-bg', `var(--n-${b.dataset.c})`); touch(); });
+$('#edPin').onclick = () => { const n = cur(); n.pinned = !n.pinned; fillEditorMeta(n); touch(); toast(n.pinned ? 'Nota fijada arriba' : 'Nota desfijada'); };
+ed.date.addEventListener('change', () => { const n = cur(); n.date = ed.date.value || null; if (!n.date) n.time = null; fillEditorMeta(n); touch(); });
+ed.time.addEventListener('change', () => { cur().time = ed.time.value || null; touch(); });
+$('#edDateClear').onclick = () => { const n = cur(); n.date = null; n.time = null; fillEditorMeta(n); touch(); };
+const tagIn = $('#tagInput');
+function addTag(raw) {
+  const t = raw.replace(/^#/, '').replace(/,/g, '').trim().slice(0, 30); if (!t) return;
+  const n = cur(); if (!n.tags.some(x => norm(x) === norm(t))) { n.tags.push(t); fillEditorMeta(n); touch(); }
+}
+tagIn.addEventListener('keydown', e => {
+  if (e.key === 'Enter' || e.key === ',') { e.preventDefault(); addTag(tagIn.value); tagIn.value = ''; }
+  else if (e.key === 'Backspace' && !tagIn.value && cur().tags.length) { cur().tags.pop(); fillEditorMeta(cur()); touch(); }
+});
+tagIn.addEventListener('change', () => { if (tagIn.value) { addTag(tagIn.value); tagIn.value = ''; } });
+tagIn.addEventListener('blur', () => { if (tagIn.value) { addTag(tagIn.value); tagIn.value = ''; } });
+$('#tagList').addEventListener('click', e => { const b = e.target.closest('button[data-i]'); if (!b) return; cur().tags.splice(+b.dataset.i, 1); fillEditorMeta(cur()); touch(); });
+/* Eliminar con deshacer */
+$('#edDelete').onclick = async () => {
+  const n = cur(); if (!n) return; const copy = structuredClone(n); delete copy._new;
+  clearTimeout(S.saveT); S.dirty = false;
+  S.notes.delete(n.id); await Store.del('notes', n.id); S.openId = null; document.body.classList.remove('editing');
+  if (!inFrame && history.state?.ed) { try { history.back(); } catch {} }
+  render();
+  if (copy.title.trim() || copy.body.trim()) toast('Nota eliminada', 'Deshacer', async () => { if (!S.dek) return; S.notes.set(copy.id, copy); await Store.put('notes', await encNote(copy)); render(); });
+};
+
+/* ================= Modales y avisos ================= */
+function closeModal() { document.querySelectorAll('.scrim').forEach(s => s.remove()); }
+function modal(html, onMount) {
+  closeModal();
+  const scrim = document.createElement('div'); scrim.className = 'scrim';
+  scrim.innerHTML = `<div class="sheet" role="dialog" aria-modal="true">${html}</div>`;
+  scrim.addEventListener('click', e => { if (e.target === scrim) closeModal(); });
+  scrim.addEventListener('keydown', e => { if (e.key === 'Escape') { e.stopPropagation(); closeModal(); } });
+  document.body.appendChild(scrim); onMount && onMount(scrim.firstElementChild);
+  setTimeout(() => scrim.querySelector('input,select,button')?.focus(), 50);
+  return scrim.firstElementChild;
+}
+function toast(text, actionLabel, action) {
+  const box = $('#toasts'); const t = document.createElement('div'); t.className = 'toast';
+  t.innerHTML = `<span>${esc(text)}</span>`;
+  if (actionLabel) { const b = document.createElement('button'); b.textContent = actionLabel; b.onclick = () => { action(); t.remove(); }; t.appendChild(b); }
+  box.appendChild(t); setTimeout(() => t.remove(), actionLabel ? 6000 : 2800);
+}
+/* askPin: pide un PIN; `check(pin)` devuelve un texto de error para reintentar, o el resultado para cerrar. */
+function askPin(title, text, okLabel = 'Continuar', check = async pin => pin) {
+  return new Promise(res => {
+    modal(`<h2>${esc(title)}</h2><p>${esc(text)}</p><form id="pinForm"><div class="field"><label for="pinAsk">PIN de 4 dígitos</label>
+      <input id="pinAsk" class="pin-in" type="password" inputmode="numeric" pattern="[0-9]{4}" maxlength="4" autocomplete="off" required></div>
+      <p id="pinAskErr" style="color:var(--danger);min-height:1.2em;margin:0" role="alert"></p>
+      <div class="actions"><button type="button" class="btn quiet" id="pinCancel">Cancelar</button><button class="btn primary" id="pinOk">${esc(okLabel)}</button></div></form>`, sh => {
+      const inp = sh.querySelector('#pinAsk'), err = sh.querySelector('#pinAskErr'), ok = sh.querySelector('#pinOk');
+      sh.querySelector('#pinCancel').onclick = () => { closeModal(); res(null); };
+      sh.querySelector('#pinForm').onsubmit = async e => {
+        e.preventDefault(); const v = inp.value;
+        if (!/^\d{4}$/.test(v)) { err.textContent = 'Escribe exactamente 4 números.'; return; }
+        ok.disabled = true; err.textContent = ''; const label = ok.textContent; ok.textContent = 'Comprobando…';
+        let r; try { r = await check(v); } catch { r = { error: 'Algo ha fallado. Inténtalo otra vez.' }; }
+        ok.disabled = false; ok.textContent = label;
+        if (r && r.error) { err.textContent = r.error; inp.value = ''; inp.focus(); return; }
+        closeModal(); res(r);
+      };
+    });
+  });
+}
+
+/* ================= Ajustes ================= */
+$('#btnSettings').onclick = openSettings;
+async function openSettings() {
+  const bioOk = await bioAvailable() && !inFrame; const st = S.meta.settings;
+  modal(`<h2>Ajustes</h2>
+    <div class="set-group"><h3>Seguridad</h3>
+      <div class="set-row"><div><b>Huella</b><small>${S.meta.bio ? 'Activada en este dispositivo' : bioOk ? 'Desactivada' : 'No disponible aquí'}</small></div>
+        ${S.meta.bio ? '<button class="btn" id="sBioOff">Desactivar</button>' : `<button class="btn primary" id="sBioOn" ${bioOk ? '' : 'disabled'}>Activar</button>`}</div>
+      <div class="set-row"><div><b>PIN</b><small>4 dígitos</small></div><button class="btn" id="sPin">Cambiar</button></div>
+      <div class="set-row"><div><label for="sAuto"><b>Bloqueo automático</b></label><small>Tras ese tiempo sin usarla o fuera de la app</small></div>
+        <select id="sAuto"><option value="0">Al salir</option><option value="1">1 minuto</option><option value="5">5 minutos</option><option value="15">15 minutos</option></select></div>
+    </div>
+    <div class="set-group"><h3>Aspecto</h3>
+      <div class="set-row"><div><label for="sTheme"><b>Tema</b></label></div><select id="sTheme"><option value="system">Como el sistema</option><option value="light">Claro</option><option value="dark">Oscuro</option></select></div>
+    </div>
+    <div class="set-group"><h3>Copias de seguridad</h3>
+      <p style="font-size:.9rem">Las notas solo existen en este dispositivo. Guarda una copia cifrada para no perderlas o para pasarlas al ordenador. Se abre con el PIN que tenías al crearla.</p>
+      <div class="set-row" style="flex-wrap:wrap;justify-content:flex-start"><button class="btn" id="sExport">Exportar copia</button><button class="btn" id="sImport">Importar copia</button>
+        <input type="file" id="sFile" accept=".json,application/json" hidden></div>
+    </div>
+    <div class="set-group"><h3>Zona peligrosa</h3>
+      <div class="set-row"><div><b>Borrar la bóveda</b><small>Elimina todas las notas de este dispositivo</small></div><button class="btn danger" id="sWipe">Borrar todo</button></div>
+    </div>
+    <div class="note-box">Tus notas se cifran con AES-256 y nunca salen de este dispositivo. Un PIN de 4 dígitos protege bien frente a quien coja el móvil (tras 5 fallos hay esperas), pero es corto: guarda las copias exportadas en un sitio seguro.</div>
+    <div class="actions"><button class="btn primary" id="sClose">Listo</button></div>`, sh => {
+    sh.querySelector('#sAuto').value = String(st.autolock ?? 1);
+    sh.querySelector('#sTheme').value = st.theme || 'system';
+    sh.querySelector('#sClose').onclick = closeModal;
+    sh.querySelector('#sAuto').onchange = e => { st.autolock = +e.target.value; saveMeta(); armIdle(); };
+    sh.querySelector('#sTheme').onchange = e => { st.theme = e.target.value; saveMeta(); applyTheme(); };
+    sh.querySelector('#sBioOn')?.addEventListener('click', async e => { e.target.disabled = true; try { await enableBio(); toast('Huella activada'); openSettings(); } catch (err) { toast(bioError(err)); e.target.disabled = false; } });
+    sh.querySelector('#sBioOff')?.addEventListener('click', async () => { S.meta.bio = null; await saveMeta(); toast('Huella desactivada'); openSettings(); });
+    sh.querySelector('#sPin').onclick = changePin;
+    sh.querySelector('#sExport').onclick = exportBackup;
+    sh.querySelector('#sImport').onclick = () => sh.querySelector('#sFile').click();
+    sh.querySelector('#sFile').onchange = e => { const f = e.target.files[0]; if (f) importBackup(f); };
+    sh.querySelector('#sWipe').onclick = wipeVault;
+  });
+}
+async function changePin() {
+  const okCur = await askPin('Cambiar PIN', 'Primero escribe tu PIN actual.', 'Continuar', async pin => {
+    try { await open_(await pinKey(pin, unb64(S.meta.salt), S.meta.iter), S.meta.pinWrap); return pin; } catch { return { error: 'Ese no es tu PIN actual.' }; } });
+  if (!okCur) return;
+  const first = await askPin('Nuevo PIN', 'Elige 4 dígitos nuevos.'); if (!first) return;
+  const done = await askPin('Repite el nuevo PIN', 'Escríbelo otra vez.', 'Guardar', async pin => {
+    if (pin !== first) return { error: 'No coincide con el nuevo PIN. Escríbelo otra vez.' };
+    const salt = rand(16); S.meta.salt = b64(salt); S.meta.iter = ITER; S.meta.pinWrap = await seal(await pinKey(pin, salt, ITER), S.dekRaw);
+    await saveMeta(); return true; });
+  if (done) toast('PIN cambiado');
+}
+async function exportBackup() {
+  await flushSave();
+  const recs = await Store.all('notes');
+  const data = { format: 'boveda-notas', version: 1, exportedAt: new Date().toISOString(), salt: S.meta.salt, iter: S.meta.iter, pinWrap: S.meta.pinWrap, notes: recs };
+  const blob = new Blob([JSON.stringify(data)], { type: 'application/json' });
+  const url = URL.createObjectURL(blob); const a = document.createElement('a');
+  a.href = url; a.download = `boveda-copia-${todayISO()}.json`; document.body.appendChild(a); a.click(); a.remove();
+  setTimeout(() => URL.revokeObjectURL(url), 4000);
+  toast(inFrame ? 'En la vista previa no se pueden descargar archivos.' : `Copia exportada (${recs.length} notas)`);
+}
+async function importBackup(file) {
+  let data; try { data = JSON.parse(await file.text()); } catch { toast('Ese archivo no es una copia de Bóveda.'); return; }
+  if (data.format !== 'boveda-notas' || !data.pinWrap || !Array.isArray(data.notes)) { toast('Ese archivo no es una copia de Bóveda.'); return; }
+  const key = await askPin('Importar copia', `Contiene ${data.notes.length} notas. Escribe el PIN que tenías cuando la exportaste.`, 'Importar', async pin => {
+    try { return await importDek(await open_(await pinKey(pin, unb64(data.salt), data.iter), data.pinWrap)); } catch { return { error: 'PIN incorrecto para esta copia.' }; } });
+  if (!key) return;
+  let added = 0, updated = 0;
+  for (const r of data.notes) {
+    try { const n = await decNote(r, key); const ex = S.notes.get(n.id);
+      if (!ex) { added++; } else if (n.updatedAt > ex.updatedAt) { updated++; } else continue;
+      S.notes.set(n.id, n); await Store.put('notes', await encNote(n));
+    } catch {}
+  }
+  render(); toast(`Importadas ${added} nuevas${updated ? ` y ${updated} actualizadas` : ''}`);
+}
+function wipeVault() {
+  modal(`<h2>Borrar la bóveda</h2><p>Se eliminarán todas las notas de este dispositivo y no se pueden recuperar sin una copia. Escribe BORRAR para confirmar.</p>
+    <form id="wForm"><div class="field"><label for="wIn">Confirmación</label><input id="wIn" autocomplete="off" autocapitalize="characters"></div>
+    <div class="actions"><button type="button" class="btn quiet" id="wNo">Cancelar</button><button class="btn danger" id="wYes" disabled>Borrar todo</button></div></form>`, sh => {
+    const i = sh.querySelector('#wIn'), y = sh.querySelector('#wYes');
+    i.oninput = () => { y.disabled = i.value.trim().toUpperCase() !== 'BORRAR'; };
+    sh.querySelector('#wNo').onclick = closeModal;
+    sh.querySelector('#wForm').onsubmit = async e => { e.preventDefault(); if (y.disabled) return; closeModal(); closeEditor(true);
+      await Store.wipe(); S.dek = null; S.dekRaw = null; S.notes.clear(); const theme = S.meta.settings.theme; S.meta = { settings: { theme } };
+      await Store.open(); showLock('setup1'); };
+  });
+}
+
+/* ================= Arranque ================= */
+(async function boot() {
+  if (!window.crypto?.subtle) { $('#lockSub').textContent = 'Este navegador no permite cifrar. Abre la app desde una dirección https.'; return; }
+  await Store.open();
+  try { S.meta = await Store.get('meta', 'vault'); } catch { S.meta = null; }
+  applyTheme();
+  if (!S.meta || !S.meta.pinWrap) { S.meta = S.meta || null; showLock('setup1'); }
+  else showLock('unlock', true);
+  if (Store.mem) $('#lockFoot').textContent = 'Este navegador no deja guardar datos aquí: las notas se perderán al cerrar.';
+  if ('serviceWorker' in navigator && !inFrame && location.protocol === 'https:') navigator.serviceWorker.register('sw.js').catch(() => {});
+})();
+})();
+</script>
+
+</body>
+</html>
