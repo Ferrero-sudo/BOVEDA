@@ -31,10 +31,26 @@ Al crear el PIN, la app ofrece activar la huella (también en Ajustes). Usa una 
 posterior; en el ordenador depende del navegador y de Windows Hello o Touch ID. Si el navegador no lo
 admite, la app te lo dice y sigues con el PIN.
 
-## Pasar notas entre el móvil y el ordenador
+## Sincronizar el móvil y el ordenador
 
-Cada dispositivo tiene su propia bóveda. Ajustes > Exportar copia crea un archivo cifrado; en el otro
-dispositivo, Ajustes > Importar copia y escribe el PIN que tenías al exportarla.
+Las notas se sincronizan al abrir la app, al volver a ella, al guardar y al bloquearla. Si una nota
+cambia en los dos, gana la versión más reciente.
+
+1. En GitHub crea un repositorio **privado** nuevo, por ejemplo `boveda-datos` (no uses BOVEDA, que es público).
+2. Crea una llave: github.com/settings/personal-access-tokens/new
+   - Repository access: *Only select repositories* → `boveda-datos`
+   - Permissions → Repository permissions → **Contents: Read and write**
+   - Pulsa *Generate token* y copia la llave (empieza por `github_pat_`).
+3. En el ordenador: Ajustes → Sincronización → **Activar en este dispositivo**, escribe
+   `Ferrero-sudo/boveda-datos` y pega la llave.
+4. Aparece un **QR**. En el móvil, abre la cámara, apunta al QR y abre el enlace. Crea o escribe tu
+   PIN y pulsa **Enlazar**.
+
+En la nube solo hay un archivo cifrado con una clave aleatoria de 256 bits que nunca sale de tus
+dispositivos (solo viaja dentro del QR). No se puede abrir probando PINs. Cuando la llave de GitHub
+caduque, el icono de la nube se pone rojo: crea otra y ponla en Ajustes → Cambiar llave, en cada dispositivo.
+
+Copias manuales: Ajustes → Exportar copia / Importar copia (se abren con el PIN que tenías al exportar).
 
 ## Seguridad, en claro
 

@@ -10,7 +10,7 @@
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="Bóveda">
 <meta name="referrer" content="no-referrer">
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self' data: blob:; connect-src 'self' https://fonts.googleapis.com https://fonts.gstatic.com; object-src 'none'; base-uri 'none'; form-action 'none'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self' data: blob:; connect-src 'self' https://api.github.com https://fonts.googleapis.com https://fonts.gstatic.com; object-src 'none'; base-uri 'none'; form-action 'none'">
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" href="icon.svg" type="image/svg+xml">
 <link rel="apple-touch-icon" href="icon-192.png">
@@ -115,6 +115,7 @@ svg{display:block}
 .btn{white-space:nowrap;display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:44px;padding:0 18px;border-radius:999px;border:1px solid var(--line);
   background:var(--surface);font-weight:700;font-size:.95rem;transition:background .15s,border-color .15s}
 .btn:hover{border-color:var(--ink-3)}
+.btn:disabled{opacity:.45;cursor:default}
 .btn.primary{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
 .btn.danger{background:var(--danger-soft);border-color:transparent;color:var(--danger)}
 .btn.quiet{background:transparent;border-color:transparent;color:var(--ink-2)}
@@ -254,6 +255,19 @@ body.editing #editor{transform:none;visibility:visible}
   body.editing #fab{right:calc(max(440px,46%) + 24px)}
 }
 
+#btnSync[data-state="ok"]{color:var(--accent)}
+#btnSync[data-state="busy"] svg{animation:pulseop 1s infinite ease-in-out}
+#btnSync[data-state="err"]{color:var(--danger)}
+#btnSync[data-state="off"]{color:var(--ink-3)}
+@keyframes pulseop{50%{opacity:.35}}
+.qrbox{background:#fff;border-radius:16px;padding:10px;width:min(280px,100%);margin:6px auto 4px}
+.qrbox svg{width:100%;height:auto}
+.codebox{font-family:var(--f-mono);font-size:.72rem;word-break:break-all;background:var(--surface-2);border-radius:10px;padding:10px 12px;max-height:7.5em;overflow:auto;user-select:all}
+.field textarea{border-radius:12px;border:1px solid var(--line);background:var(--bg);padding:10px 14px;font-size:.85rem;font-family:var(--f-mono);min-height:6em;resize:vertical}
+.steps{margin:6px 0 10px;padding-left:1.2em;color:var(--ink-2);font-size:.92rem}
+.steps li{margin-bottom:4px}
+.warn{color:var(--danger);font-size:.88rem}
+
 /* ---------- Modal + toast ---------- */
 .scrim{position:fixed;inset:0;z-index:40;background:color-mix(in srgb,#000 45%,transparent);display:flex;align-items:flex-end;justify-content:center;animation:fade .2s}
 @keyframes fade{from{background:transparent}}
@@ -305,6 +319,9 @@ body.editing #editor{transform:none;visibility:visible}
     <symbol id="i-del" viewBox="0 0 24 24"><path d="M9 6h10a1 1 0 0 1 1 1v10a1 1 0 0 1-1 1H9l-6-6z"/><path d="m12 10 4 4M16 10l-4 4"/></symbol>
     <symbol id="i-finger" viewBox="0 0 24 24"><path d="M7.5 4.8A8 8 0 0 1 20 11.5v1.2"/><path d="M4.3 8.5A8 8 0 0 0 4 11v2.5"/><path d="M8 18.5c.6-1.7 1-3.5 1-5.5v-1.5a3 3 0 0 1 6 0V13c0 2.3-.4 4.4-1.2 6.4"/><path d="M12 11.5V13c0 3-.7 5.7-2 8"/><path d="M17.8 15.5c-.3 1.7-.8 3.3-1.4 4.8"/><path d="M6.4 15.6c-.3 1-.7 2-1.2 2.9"/></symbol>
     <symbol id="i-tag" viewBox="0 0 24 24"><path d="M3 12V4h8l9 9-8 8z"/><circle cx="7.5" cy="8.5" r="1.2"/></symbol>
+    <symbol id="i-cloud" viewBox="0 0 24 24"><path d="M7 18a4.5 4.5 0 0 1-.6-8.96A6 6 0 0 1 18 8.5a4 4 0 0 1-.5 9.5z"/></symbol>
+    <symbol id="i-cloud-ok" viewBox="0 0 24 24"><path d="M7 18a4.5 4.5 0 0 1-.6-8.96A6 6 0 0 1 18 8.5a4 4 0 0 1-.5 9.5z"/><path d="m9.5 13 2 2 3.5-3.5"/></symbol>
+    <symbol id="i-cloud-x" viewBox="0 0 24 24"><path d="M7 18a4.5 4.5 0 0 1-.6-8.96A6 6 0 0 1 18 8.5a4 4 0 0 1-.5 9.5z"/><path d="M12 10.5v3M12 16h.01"/></symbol>
     <symbol id="i-eye" viewBox="0 0 24 24"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></symbol>
   </defs>
 </svg>
@@ -334,6 +351,7 @@ body.editing #editor{transform:none;visibility:visible}
           <span class="kbd" id="qKbd" aria-hidden="true">Ctrl K</span>
           <button class="icon-btn" id="qClear" hidden aria-label="Borrar búsqueda"><svg class="ico"><use href="#i-x"/></svg></button>
         </div>
+        <button class="icon-btn" id="btnSync" hidden data-state="ok" aria-label="Sincronizar ahora" title="Sincronizado"><svg class="ico"><use href="#i-cloud-ok"/></svg></button>
         <button class="icon-btn" id="btnLock" aria-label="Bloquear ahora" title="Bloquear (Alt+L)"><svg class="ico"><use href="#i-lock"/></svg></button>
         <button class="icon-btn" id="btnSettings" aria-label="Ajustes" title="Ajustes"><svg class="ico"><use href="#i-sliders"/></svg></button>
       </div>
@@ -394,6 +412,7 @@ body.editing #editor{transform:none;visibility:visible}
 
 <div id="toasts" aria-live="polite"></div>
 
+<script src="qrcode.js"></script>
 <script>
 (() => {
 'use strict';
@@ -411,7 +430,7 @@ const todayISO = () => { const d = new Date(); return `${d.getFullYear()}-${pad2
 const isoToDate = iso => { const [y, m, d] = iso.split('-').map(Number); return new Date(y, m - 1, d); };
 const addDaysISO = (n) => { const d = new Date(); d.setDate(d.getDate() + n); return `${d.getFullYear()}-${pad2(d.getMonth() + 1)}-${pad2(d.getDate())}`; };
 const inFrame = (() => { try { return window.self !== window.top; } catch { return true; } })();
-const APP_VERSION = '1.1.0';
+const APP_VERSION = '1.2.0';
 const ITER = 600000;
 const COLORS = ['none', 'rojo', 'naranja', 'amarillo', 'verde', 'azul', 'lila', 'gris'];
 const COLOR_NAMES = { none: 'Sin color', rojo: 'Rojo', naranja: 'Naranja', amarillo: 'Amarillo', verde: 'Verde', azul: 'Azul', lila: 'Lila', gris: 'Gris' };
@@ -492,7 +511,7 @@ function bioError(e) {
 }
 
 /* ================= Estado ================= */
-const S = { meta: null, dek: null, dekRaw: null, notes: new Map(), q: '', filter: 'all', openId: null, mode: 'edit', hiddenAt: 0, idle: null, saveT: null, dirty: false };
+const S = { meta: null, dek: null, dekRaw: null, notes: new Map(), tombs: new Map(), sync: null, syncing: false, syncAgain: false, syncT: null, pendingLink: null, q: '', filter: 'all', openId: null, mode: 'edit', hiddenAt: 0, idle: null, saveT: null, dirty: false };
 async function saveMeta() { await Store.put('meta', S.meta, 'vault'); }
 function applyTheme() {
   const t = S.meta?.settings?.theme || 'system';
@@ -582,7 +601,7 @@ async function createVault(pin) {
     settings: { autolock: 1, theme: S.meta?.settings?.theme || 'system' } };
   S.dekRaw = raw; S.dek = await importDek(raw);
   await saveMeta();
-  for (const n of sampleNotes()) { S.notes.set(n.id, n); await Store.put('notes', await encNote(n)); }
+  if (!S.pendingLink) for (const n of sampleNotes()) { S.notes.set(n.id, n); await Store.put('notes', await encNote(n)); }
   try { navigator.storage && navigator.storage.persist && navigator.storage.persist(); } catch {}
 }
 async function tryPin(pin) {
@@ -613,19 +632,23 @@ document.addEventListener('keydown', e => {
 
 /* ================= Entrar / bloquear ================= */
 async function enterApp() {
-  S.notes.clear();
-  const recs = await Store.all('notes'); let bad = 0;
-  for (const r of recs) { try { const n = await decNote(r); S.notes.set(n.id, n); } catch { bad++; } }
+  S.notes.clear(); S.tombs.clear();
+  const recs = await Store.all('notes'); let bad = 0; const old = Date.now() - 90 * 864e5;
+  for (const r of recs) { try { const n = await decNote(r);
+    if (n.deleted) { if (n.updatedAt < old) Store.del('notes', n.id); else S.tombs.set(n.id, n); } else S.notes.set(n.id, n); } catch { bad++; } }
   $('#lock').hidden = true; $('#app').hidden = false;
   render(true); armIdle();
   if (bad) toast(`${bad} nota(s) no se pudieron descifrar.`);
+  await loadSync();
+  if (S.pendingLink) offerPendingLink(); else syncNow();
   if (!inFrame && history.state?.ed) history.replaceState(null, '');
 }
 async function lockNow() {
   if (!S.dek) return;
   await flushSave();
   closeModal(); closeEditor(true);
-  S.dek = null; S.dekRaw = null; S.notes.clear(); S.q = ''; $('#q').value = ''; $('#main').innerHTML = '';
+  if (S.sync) { clearTimeout(S.syncT); await Promise.race([syncNow(), new Promise(r => setTimeout(r, 4000))]); }
+  S.dek = null; S.dekRaw = null; S.sync = null; S.notes.clear(); S.tombs.clear(); setSyncUI(); S.q = ''; $('#q').value = ''; $('#main').innerHTML = '';
   clearTimeout(S.idle);
   showLock('unlock');
 }
@@ -634,8 +657,9 @@ function armIdle() { clearTimeout(S.idle); if (S.dek) S.idle = setTimeout(lockNo
 ['pointerdown', 'keydown', 'input', 'wheel', 'touchstart'].forEach(ev => document.addEventListener(ev, () => { if (S.dek) armIdle(); }, { passive: true, capture: true }));
 document.addEventListener('visibilitychange', async () => {
   if (!S.dek) { if (document.visibilityState === 'visible' && L.stage === 'unlock' && !$('#lock').hidden && S.meta?.bio && !lockedFor() && !inFrame) setTimeout(() => unlockBio(true), 250); return; }
-  if (document.visibilityState === 'hidden') { S.hiddenAt = Date.now(); await flushSave(); if ((S.meta.settings.autolock ?? 1) === 0) lockNow(); }
+  if (document.visibilityState === 'hidden') { S.hiddenAt = Date.now(); await flushSave(); if ((S.meta.settings.autolock ?? 1) === 0) lockNow(); else if (S.sync) syncNow(); }
   else if (S.hiddenAt && Date.now() - S.hiddenAt > idleMs()) lockNow();
+  else if (S.sync) syncNow();
 });
 
 /* ================= Notas de ejemplo ================= */
@@ -803,7 +827,7 @@ async function toggleLine(id, idx) {
   const lines = n.body.split('\n'); const ln = lines[idx]; if (ln == null) return;
   lines[idx] = /\[ \]/.test(ln) ? ln.replace('[ ]', '[x]') : ln.replace(/\[(x|X)\]/, '[ ]');
   n.body = lines.join('\n'); n.updatedAt = Date.now();
-  await Store.put('notes', await encNote(n));
+  await Store.put('notes', await encNote(n)); scheduleSync();
   if (S.openId === id) { $('#edBody').value = n.body; if (S.mode === 'view') renderView(); }
   render();
 }
@@ -869,7 +893,7 @@ function fillEditorMeta(n) {
 function closeEditor(silent) {
   if (!S.openId) return;
   const n = cur(); flushSave();
-  if (n && !n.title.trim() && !n.body.trim()) { S.notes.delete(n.id); Store.del('notes', n.id); }
+  if (n && !n.title.trim() && !n.body.trim()) { if (n._new) S.notes.delete(n.id); else removeNote(n.id); }
   S.openId = null; document.body.classList.remove('editing');
   if (!silent) render();
   if (!inFrame && history.state?.ed) { try { history.back(); } catch {} }
@@ -883,7 +907,7 @@ async function flushSave() {
   const n = cur(); if (!n) return;
   if (!n.title.trim() && !n.body.trim()) return;
   const { _new, ...clean } = n;
-  try { await Store.put('notes', await encNote(clean)); $('#saveState').textContent = 'Guardado'; }
+  try { await Store.put('notes', await encNote(clean)); $('#saveState').textContent = 'Guardado'; scheduleSync(); }
   catch { $('#saveState').textContent = 'Error al guardar'; toast('No se pudo guardar. Comprueba el espacio libre del dispositivo.'); }
   renderSoon();
 }
@@ -957,10 +981,10 @@ $('#tagList').addEventListener('click', e => { const b = e.target.closest('butto
 $('#edDelete').onclick = async () => {
   const n = cur(); if (!n) return; const copy = structuredClone(n); delete copy._new;
   clearTimeout(S.saveT); S.dirty = false;
-  S.notes.delete(n.id); await Store.del('notes', n.id); S.openId = null; document.body.classList.remove('editing');
+  await removeNote(n.id); S.openId = null; document.body.classList.remove('editing');
   if (!inFrame && history.state?.ed) { try { history.back(); } catch {} }
   render();
-  if (copy.title.trim() || copy.body.trim()) toast('Nota eliminada', 'Deshacer', async () => { if (!S.dek) return; S.notes.set(copy.id, copy); await Store.put('notes', await encNote(copy)); render(); });
+  if (copy.title.trim() || copy.body.trim()) toast('Nota eliminada', 'Deshacer', async () => { if (!S.dek) return; copy.updatedAt = Date.now(); S.tombs.delete(copy.id); S.notes.set(copy.id, copy); await Store.put('notes', await encNote(copy)); scheduleSync(); render(); });
 };
 
 /* ================= Modales y avisos ================= */
@@ -1018,11 +1042,12 @@ async function openSettings() {
     <div class="set-group"><h3>Aspecto</h3>
       <div class="set-row"><div><label for="sTheme"><b>Tema</b></label></div><select id="sTheme"><option value="system">Como el sistema</option><option value="light">Claro</option><option value="dark">Oscuro</option></select></div>
     </div>
+    <div class="set-group"><h3>Sincronización</h3>${syncSettingsHTML()}</div>
     <div class="set-group"><h3>Aplicación</h3>
       <div class="set-row"><div><b>Versión ${APP_VERSION}</b><small id="sVerInfo">Se actualiza sola al abrirla con internet</small></div><button class="btn" id="sUpdate">Buscar actualización</button></div>
     </div>
     <div class="set-group"><h3>Copias de seguridad</h3>
-      <p style="font-size:.9rem">Las notas solo existen en este dispositivo. Guarda una copia cifrada para no perderlas o para pasarlas al ordenador. Se abre con el PIN que tenías al crearla.</p>
+      <p style="font-size:.9rem">${S.sync ? 'Aunque sincronices, guarda de vez en cuando una copia cifrada en un sitio seguro.' : 'Las notas solo existen en este dispositivo. Guarda una copia cifrada para no perderlas.'} Se abre con el PIN que tenías al crearla.</p>
       <div class="set-row" style="flex-wrap:wrap;justify-content:flex-start"><button class="btn" id="sExport">Exportar copia</button><button class="btn" id="sImport">Importar copia</button>
         <input type="file" id="sFile" accept=".json,application/json" hidden></div>
     </div>
@@ -1043,6 +1068,7 @@ async function openSettings() {
     sh.querySelector('#sImport').onclick = () => sh.querySelector('#sFile').click();
     sh.querySelector('#sFile').onchange = e => { const f = e.target.files[0]; if (f) importBackup(f); };
     sh.querySelector('#sWipe').onclick = wipeVault;
+    bindSyncSettings(sh);
     sh.querySelector('#sUpdate').onclick = e => checkUpdate(e.target, sh.querySelector('#sVerInfo'));
   });
 }
@@ -1075,12 +1101,12 @@ async function importBackup(file) {
   if (!key) return;
   let added = 0, updated = 0;
   for (const r of data.notes) {
-    try { const n = await decNote(r, key); const ex = S.notes.get(n.id);
+    try { const n = await decNote(r, key); if (n.deleted) continue; const ex = S.notes.get(n.id);
       if (!ex) { added++; } else if (n.updatedAt > ex.updatedAt) { updated++; } else continue;
       S.notes.set(n.id, n); await Store.put('notes', await encNote(n));
     } catch {}
   }
-  render(); toast(`Importadas ${added} nuevas${updated ? ` y ${updated} actualizadas` : ''}`);
+  render(); scheduleSync(); toast(`Importadas ${added} nuevas${updated ? ` y ${updated} actualizadas` : ''}`);
 }
 function wipeVault() {
   modal(`<h2>Borrar la bóveda</h2><p>Se eliminarán todas las notas de este dispositivo y no se pueden recuperar sin una copia. Escribe BORRAR para confirmar.</p>
@@ -1090,8 +1116,231 @@ function wipeVault() {
     i.oninput = () => { y.disabled = i.value.trim().toUpperCase() !== 'BORRAR'; };
     sh.querySelector('#wNo').onclick = closeModal;
     sh.querySelector('#wForm').onsubmit = async e => { e.preventDefault(); if (y.disabled) return; closeModal(); closeEditor(true);
-      await Store.wipe(); S.dek = null; S.dekRaw = null; S.notes.clear(); const theme = S.meta.settings.theme; S.meta = { settings: { theme } };
+      await Store.wipe(); S.dek = null; S.dekRaw = null; S.sync = null; setSyncUI(); S.notes.clear(); S.tombs.clear(); const theme = S.meta.settings.theme; S.meta = { settings: { theme } };
       await Store.open(); showLock('setup1'); };
+  });
+}
+
+/* ================= Sincronización (repositorio privado de GitHub) ================= */
+const GH = 'https://api.github.com';
+const SYNC_FILE = 'boveda.json';
+const b64u = s => btoa(s).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+const unb64u = s => atob(s.replace(/-/g, '+').replace(/_/g, '/') + '==='.slice((s.length + 3) % 4));
+async function removeNote(id) {
+  const tomb = { id, deleted: true, updatedAt: Date.now() };
+  S.notes.delete(id); S.tombs.set(id, tomb);
+  await Store.put('notes', await encNote(tomb)); scheduleSync();
+}
+async function loadSync() {
+  S.sync = null;
+  if (S.meta.sync) {
+    try { const d = JSON.parse(dec.decode(await open_(S.dek, S.meta.sync.enc))); S.sync = { repo: S.meta.sync.repo, t: d.t, k: d.k, key: await importDek(unb64(d.k)) }; }
+    catch { S.sync = null; }
+  }
+  setSyncUI(S.sync ? 'ok' : null);
+}
+async function saveSyncConfig(repo, t, k) {
+  S.meta.sync = { repo, enc: await seal(S.dek, enc.encode(JSON.stringify({ t, k }))) };
+  S.meta.lastSync = 0; await saveMeta(); await loadSync();
+}
+function setSyncUI(state, msg) {
+  const b = $('#btnSync'); if (!b) return;
+  if (!S.sync) { b.hidden = true; return; }
+  b.hidden = false; if (state) b.dataset.state = state;
+  const t = { ok: 'Sincronizado', busy: 'Sincronizando…', err: msg || 'Error al sincronizar', off: 'Sin conexión: se sincronizará al volver internet' }[b.dataset.state];
+  b.title = t; b.setAttribute('aria-label', t + '. Pulsa para sincronizar ahora');
+  b.querySelector('use').setAttribute('href', b.dataset.state === 'err' ? '#i-cloud-x' : b.dataset.state === 'ok' ? '#i-cloud-ok' : '#i-cloud');
+  S.syncMsg = t;
+}
+function scheduleSync(ms = 2500) { if (!S.sync) return; clearTimeout(S.syncT); S.syncT = setTimeout(syncNow, ms); }
+async function gh(path, opts = {}, sync = S.sync) {
+  const r = await fetch(GH + path, { ...opts, cache: 'no-store', headers: { Authorization: `Bearer ${sync.t}`, Accept: 'application/vnd.github+json', 'X-GitHub-Api-Version': '2022-11-28', ...(opts.headers || {}) } });
+  return r;
+}
+function ghError(status) {
+  if (status === 401) return 'La llave de GitHub no es válida o ha caducado.';
+  if (status === 403) return 'GitHub ha rechazado el acceso. Revisa que la llave tenga permiso de escritura en ese repositorio.';
+  if (status === 404) return 'No encuentro el repositorio o la llave no tiene acceso a él.';
+  return `GitHub respondió con un error (${status}). Se reintentará.`;
+}
+async function ghGet(sync = S.sync) {
+  const r = await gh(`/repos/${sync.repo}/contents/${SYNC_FILE}`, {}, sync);
+  if (r.status === 404) return { items: [], sha: null, exists: false };
+  if (!r.ok) throw Object.assign(new Error('gh'), { status: r.status });
+  const j = await r.json(); let text;
+  if (j.content) text = atob(j.content.replace(/\s/g, ''));
+  else { const raw = await gh(`/repos/${sync.repo}/contents/${SYNC_FILE}`, { headers: { Accept: 'application/vnd.github.raw' } }, sync); if (!raw.ok) throw Object.assign(new Error('gh'), { status: raw.status }); text = await raw.text(); }
+  const box = JSON.parse(text);
+  if (box.format !== 'boveda-sync') throw Object.assign(new Error('format'), { status: 0 });
+  let data;
+  try { data = JSON.parse(dec.decode(await open_(sync.key, box))); }
+  catch { throw Object.assign(new Error('key'), { status: -1 }); }
+  return { items: data.items || [], sha: j.sha, exists: true };
+}
+async function ghPut(items, sha, sync = S.sync) {
+  const box = { format: 'boveda-sync', v: 1, ...(await seal(sync.key, enc.encode(JSON.stringify({ items, at: Date.now() })))) };
+  const body = { message: 'Sincronización', content: btoa(JSON.stringify(box)) }; if (sha) body.sha = sha;
+  const r = await gh(`/repos/${sync.repo}/contents/${SYNC_FILE}`, { method: 'PUT', body: JSON.stringify(body), headers: { 'Content-Type': 'application/json' } }, sync);
+  if (r.status === 409 || r.status === 422) return false;
+  if (!r.ok) throw Object.assign(new Error('gh'), { status: r.status });
+  return true;
+}
+const cleanNote = n => { const { _new, ...c } = n; return c; };
+async function applyRemote(r) {
+  if (r.deleted) { S.notes.delete(r.id); S.tombs.set(r.id, r); if (S.openId === r.id) { S.openId = null; document.body.classList.remove('editing'); } }
+  else { S.tombs.delete(r.id); S.notes.set(r.id, r); if (S.openId === r.id) { ed.title.value = r.title; ed.body.value = r.body; fillEditorMeta(r); if (S.mode === 'view') renderView(); autoGrow(); } }
+  await Store.put('notes', await encNote(r));
+}
+async function syncNow() {
+  if (!S.sync || !S.dek) return;
+  if (S.syncing) { S.syncAgain = true; return; }
+  if (!navigator.onLine) { setSyncUI('off'); return; }
+  S.syncing = true; clearTimeout(S.syncT); setSyncUI('busy');
+  try {
+    await flushSave();
+    for (let attempt = 0; attempt < 3; attempt++) {
+      const { items, sha } = await ghGet();
+      if (!S.dek) return;
+      const remote = new Map(items.map(x => [x.id, x])); let applied = 0;
+      for (const r of items) {
+        const l = S.notes.get(r.id) || S.tombs.get(r.id);
+        if (l && l._new) continue;
+        if (!l || r.updatedAt > l.updatedAt) { if (S.openId === r.id && S.dirty) continue; await applyRemote(r); applied++; }
+      }
+      const all = [...S.notes.values()].filter(n => !n._new).map(cleanNote).concat([...S.tombs.values()]);
+      const needPush = all.some(l => { const r = remote.get(l.id); return !r || l.updatedAt > r.updatedAt; });
+      if (needPush && !(await ghPut(all, sha))) continue;
+      S.meta.lastSync = Date.now(); saveMeta();
+      if (applied) { render(); toast(applied === 1 ? '1 cambio recibido del otro dispositivo' : `${applied} cambios recibidos del otro dispositivo`); }
+      setSyncUI('ok'); break;
+    }
+  } catch (e) {
+    if (!navigator.onLine || e instanceof TypeError) setSyncUI('off');
+    else if (e.status === -1) setSyncUI('err', 'La clave de enlace no coincide con la de la nube. Vuelve a enlazar este dispositivo.');
+    else setSyncUI('err', ghError(e.status));
+  } finally {
+    S.syncing = false;
+    if (S.syncAgain) { S.syncAgain = false; scheduleSync(400); }
+  }
+}
+window.addEventListener('online', () => { if (S.sync && S.dek) syncNow(); });
+$('#btnSync').onclick = () => { if (S.syncMsg && $('#btnSync').dataset.state === 'err') toast(S.syncMsg); syncNow(); };
+
+/* Enlace entre dispositivos */
+function linkCode() { return b64u(JSON.stringify({ v: 1, r: S.sync.repo, t: S.sync.t, k: S.sync.k })); }
+function parseLinkCode(raw) {
+  try { let c = String(raw).trim(); const i = c.indexOf('#enlace='); if (i >= 0) c = c.slice(i + 8); const d = JSON.parse(unb64u(c));
+    if (d.v === 1 && /^[\w.-]+\/[\w.-]+$/.test(d.r) && d.t && d.k && unb64(d.k).length === 32) return d; } catch {}
+  return null;
+}
+function readLinkFromHash() {
+  if (!location.hash.startsWith('#enlace=')) return;
+  S.pendingLink = parseLinkCode(location.hash);
+  try { history.replaceState(null, '', location.pathname + location.search); } catch { location.hash = ''; }
+}
+async function testRepo(repo, t) {
+  let r; try { r = await fetch(`${GH}/repos/${repo}`, { cache: 'no-store', headers: { Authorization: `Bearer ${t}`, Accept: 'application/vnd.github+json' } }); }
+  catch { return { error: 'Sin conexión con GitHub. Comprueba internet.' }; }
+  if (!r.ok) return { error: ghError(r.status) };
+  const j = await r.json();
+  if (!j.private) return { error: 'Ese repositorio es público. Para tus notas usa uno privado.' };
+  if (j.permissions && !j.permissions.push) return { error: 'La llave solo puede leer. Dale permiso de escritura (Contents: Read and write).' };
+  return { ok: true };
+}
+async function adoptLink(d) {
+  const t = await testRepo(d.r, d.t); if (t.error) { toast(t.error); return false; }
+  const trial = { repo: d.r, t: d.t, k: d.k, key: await importDek(unb64(d.k)) };
+  try { await ghGet(trial); } catch (e) { toast(e.status === -1 ? 'Ese código no corresponde a los datos de la nube.' : ghError(e.status)); return false; }
+  await saveSyncConfig(d.r, d.t, d.k); toast('Dispositivo enlazado. Sincronizando…'); await syncNow(); return true;
+}
+function offerPendingLink() {
+  const d = S.pendingLink; S.pendingLink = null;
+  if (!d) { toast('El enlace no es válido. Genera uno nuevo en el otro dispositivo.'); return; }
+  modal(`<h2>Enlazar este dispositivo</h2><p>Se sincronizarán tus notas con el repositorio privado <b>${esc(d.r)}</b>. Las notas que ya tengas aquí se mantienen y se suben también.</p>
+    <div class="actions"><button class="btn quiet" id="plNo">Ahora no</button><button class="btn primary" id="plYes">Enlazar</button></div>`, sh => {
+    sh.querySelector('#plNo').onclick = closeModal;
+    sh.querySelector('#plYes').onclick = async e => { e.target.disabled = true; e.target.textContent = 'Enlazando…'; const ok = await adoptLink(d); if (ok) { closeModal(); render(); } else { e.target.disabled = false; e.target.textContent = 'Enlazar'; } };
+  });
+}
+function syncSettingsHTML() {
+  if (!S.sync) return `<p style="font-size:.9rem">Mantén iguales las notas del móvil y del ordenador. Se guardan cifradas con una clave aleatoria en un repositorio privado de tu GitHub.</p>
+    <div class="set-row" style="flex-wrap:wrap;justify-content:flex-start"><button class="btn primary" id="syOn">Activar en este dispositivo</button><button class="btn" id="syCode">Tengo un código de enlace</button></div>`;
+  const last = S.meta.lastSync ? relTime(S.meta.lastSync) : 'todavía no';
+  return `<div class="set-row"><div><b>${esc(S.sync.repo)}</b><small>Última sincronización: ${esc(last)}${$('#btnSync').dataset.state === 'err' ? ' · ' + esc(S.syncMsg) : ''}</small></div><button class="btn" id="syNow">Sincronizar</button></div>
+    <div class="set-row" style="flex-wrap:wrap;justify-content:flex-start"><button class="btn primary" id="syPair">Enlazar otro dispositivo</button><button class="btn" id="syKey">Cambiar llave</button><button class="btn quiet" id="syOff">Desactivar aquí</button></div>`;
+}
+function bindSyncSettings(sh) {
+  sh.querySelector('#syOn')?.addEventListener('click', activateSync);
+  sh.querySelector('#syCode')?.addEventListener('click', enterCode);
+  sh.querySelector('#syNow')?.addEventListener('click', async () => { await syncNow(); openSettings(); });
+  sh.querySelector('#syPair')?.addEventListener('click', showPairing);
+  sh.querySelector('#syKey')?.addEventListener('click', changeToken);
+  sh.querySelector('#syOff')?.addEventListener('click', async () => { S.meta.sync = null; S.sync = null; await saveMeta(); setSyncUI(); toast('Sincronización desactivada en este dispositivo'); openSettings(); });
+}
+function activateSync() {
+  modal(`<h2>Activar sincronización</h2><p>Hazlo en un solo dispositivo (el ordenador, por ejemplo). Luego enlazarás el móvil con un QR.</p>
+    <ol class="steps"><li>Crea en GitHub un repositorio <b>privado</b>, por ejemplo <i>boveda-datos</i>.</li><li>Crea una llave (token de grano fino) solo para ese repositorio con permiso <b>Contents: Read and write</b>.</li></ol>
+    <form id="syForm"><div class="field"><label for="syRepo">Repositorio (usuario/nombre)</label><input id="syRepo" placeholder="Ferrero-sudo/boveda-datos" autocomplete="off" autocapitalize="off" spellcheck="false" required></div>
+    <div class="field"><label for="syTok">Llave de GitHub</label><input id="syTok" type="password" placeholder="github_pat_…" autocomplete="off" required></div>
+    <p id="syErr" class="warn" role="alert" style="min-height:1.2em;margin:0"></p>
+    <div class="actions"><button type="button" class="btn quiet" id="syCancel">Cancelar</button><button class="btn primary" id="syGo">Activar</button></div></form>`, sh => {
+    sh.querySelector('#syCancel').onclick = openSettings;
+    sh.querySelector('#syForm').onsubmit = async e => {
+      e.preventDefault(); const err = sh.querySelector('#syErr'), go = sh.querySelector('#syGo');
+      const repo = sh.querySelector('#syRepo').value.trim().replace(/^https?:\/\/github\.com\//, '').replace(/\.git$|\/$/g, ''), t = sh.querySelector('#syTok').value.trim();
+      if (!/^[\w.-]+\/[\w.-]+$/.test(repo)) { err.textContent = 'Escribe usuario/repositorio, por ejemplo Ferrero-sudo/boveda-datos.'; return; }
+      go.disabled = true; go.textContent = 'Comprobando…'; err.textContent = '';
+      const chk = await testRepo(repo, t);
+      if (chk.error) { err.textContent = chk.error; go.disabled = false; go.textContent = 'Activar'; return; }
+      const k = b64(rand(32)); const trial = { repo, t, k, key: await importDek(unb64(k)) };
+      try { const g = await ghGet(trial); if (g.exists) { err.textContent = 'Ese repositorio ya tiene una bóveda sincronizada. Usa «Tengo un código de enlace» con el QR del otro dispositivo.'; go.disabled = false; go.textContent = 'Activar'; return; } }
+      catch (x) { if (x.status !== -1 && x.status !== 0) { err.textContent = ghError(x.status); go.disabled = false; go.textContent = 'Activar'; return; }
+        err.textContent = 'Ese repositorio ya tiene una bóveda sincronizada. Usa «Tengo un código de enlace» con el QR del otro dispositivo.'; go.disabled = false; go.textContent = 'Activar'; return; }
+      await saveSyncConfig(repo, t, k); await syncNow();
+      if ($('#btnSync').dataset.state === 'err') { err.textContent = S.syncMsg; go.disabled = false; go.textContent = 'Activar'; return; }
+      toast('Sincronización activada'); showPairing();
+    };
+  });
+}
+function showPairing() {
+  const url = location.origin + location.pathname + '#enlace=' + linkCode();
+  let qr = ''; try { if (window.BovedaQRsvg) qr = window.BovedaQRsvg(url); } catch {}
+  modal(`<h2>Enlazar otro dispositivo</h2>
+    <p>${qr ? 'En el móvil, abre la <b>cámara</b> y apunta a este código. Abre el enlace que aparezca y desbloquea la app.' : 'Copia este enlace y ábrelo en el otro dispositivo.'}</p>
+    ${qr ? `<div class="qrbox">${qr}</div>` : ''}
+    <p class="warn">Este código da acceso a tu bóveda sincronizada. No lo envíes por chat ni lo enseñes a nadie.</p>
+    <details><summary style="cursor:pointer;color:var(--ink-2);font-size:.9rem">Ver el código como texto</summary><div class="codebox" id="pCode">${esc(url)}</div>
+    <div class="actions" style="justify-content:flex-start"><button class="btn" id="pCopy">Copiar</button></div></details>
+    <div class="actions"><button class="btn primary" id="pDone">Listo</button></div>`, sh => {
+    sh.querySelector('#pDone').onclick = closeModal;
+    sh.querySelector('#pCopy').onclick = async () => { try { await navigator.clipboard.writeText(url); toast('Copiado'); } catch { const r = document.createRange(); r.selectNodeContents(sh.querySelector('#pCode')); getSelection().removeAllRanges(); getSelection().addRange(r); } };
+  });
+}
+function enterCode() {
+  modal(`<h2>Enlazar con un código</h2><p>Lo más fácil es escanear con la cámara el QR que muestra tu otro dispositivo (Ajustes → Sincronización → Enlazar otro dispositivo). Si no puedes, pega aquí el enlace.</p>
+    <form id="cForm"><div class="field"><label for="cIn">Código o enlace</label><textarea id="cIn" autocomplete="off" spellcheck="false" required></textarea></div>
+    <p id="cErr" class="warn" role="alert" style="min-height:1.2em;margin:0"></p>
+    <div class="actions"><button type="button" class="btn quiet" id="cCancel">Cancelar</button><button class="btn primary" id="cGo">Enlazar</button></div></form>`, sh => {
+    sh.querySelector('#cCancel').onclick = openSettings;
+    sh.querySelector('#cForm').onsubmit = async e => {
+      e.preventDefault(); const d = parseLinkCode(sh.querySelector('#cIn').value), go = sh.querySelector('#cGo');
+      if (!d) { sh.querySelector('#cErr').textContent = 'Ese código no es válido. Cópialo entero desde el otro dispositivo.'; return; }
+      go.disabled = true; go.textContent = 'Enlazando…';
+      if (await adoptLink(d)) { closeModal(); render(); } else { go.disabled = false; go.textContent = 'Enlazar'; }
+    };
+  });
+}
+function changeToken() {
+  modal(`<h2>Cambiar llave de GitHub</h2><p>Pega la llave nueva para <b>${esc(S.sync.repo)}</b>. Hazlo en cada dispositivo enlazado.</p>
+    <form id="tForm"><div class="field"><label for="tIn">Llave nueva</label><input id="tIn" type="password" autocomplete="off" required></div>
+    <p id="tErr" class="warn" role="alert" style="min-height:1.2em;margin:0"></p>
+    <div class="actions"><button type="button" class="btn quiet" id="tCancel">Cancelar</button><button class="btn primary" id="tGo">Guardar</button></div></form>`, sh => {
+    sh.querySelector('#tCancel').onclick = openSettings;
+    sh.querySelector('#tForm').onsubmit = async e => {
+      e.preventDefault(); const t = sh.querySelector('#tIn').value.trim(); const chk = await testRepo(S.sync.repo, t);
+      if (chk.error) { sh.querySelector('#tErr').textContent = chk.error; return; }
+      await saveSyncConfig(S.sync.repo, t, S.sync.k); closeModal(); toast('Llave actualizada'); syncNow();
+    };
   });
 }
 
@@ -1126,11 +1375,12 @@ if ('serviceWorker' in navigator && !inFrame) {
 /* ================= Arranque ================= */
 (async function boot() {
   if (!window.crypto?.subtle) { $('#lockSub').textContent = 'Este navegador no permite cifrar. Abre la app desde una dirección https.'; return; }
+  readLinkFromHash();
   await Store.open();
   try { S.meta = await Store.get('meta', 'vault'); } catch { S.meta = null; }
   applyTheme();
-  if (!S.meta || !S.meta.pinWrap) { S.meta = S.meta || null; showLock('setup1'); }
-  else showLock('unlock', true);
+  if (!S.meta || !S.meta.pinWrap) { S.meta = S.meta || null; showLock('setup1'); if (S.pendingLink) lockMsg('Crea tu PIN y después se enlazará con tu otro dispositivo.'); }
+  else { showLock('unlock', true); if (S.pendingLink) lockMsg('Desbloquea para terminar de enlazar este dispositivo.'); }
   if (Store.mem) $('#lockFoot').textContent = 'Este navegador no deja guardar datos aquí: las notas se perderán al cerrar.';
   if ('serviceWorker' in navigator && !inFrame && location.protocol === 'https:') navigator.serviceWorker.register('sw.js').then(r => { swReg = r; r.update().catch(() => {}); }).catch(() => {});
 })();
